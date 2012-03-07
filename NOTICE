@@ -1,0 +1,11 @@
+WebView-GM
+Copyright 2012 Werner Bayer
+Licensed under the Apache License 2.0.
+
+
+Includes:
+
+UnicodeReader class, from the
+Google Data Java Client Library
+Copyright 2008 Google Inc.
+Licensed under the Apache License 2.0.
