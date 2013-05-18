@@ -106,17 +106,16 @@ public class ScriptBrowser {
 		StringBuilder out = new StringBuilder();
 		Reader in = null;
 		HttpURLConnection con = null;
+		char[] buffer = new char[4096];
 		try {
 			URL u = new URL(url);
 			con = (HttpURLConnection) u.openConnection();
 			con.setReadTimeout(5000);
-			con.setDoOutput(true);
 			con.setRequestMethod("GET");
 			con.setUseCaches(false);
 			con.connect();
 			InputStream is = con.getInputStream();
 			in = new UnicodeReader(is, con.getContentEncoding());
-			char[] buffer = new char[4096];
 			int bytesRead = 0;
 			while ((bytesRead = in.read(buffer, 0, 4096)) != -1) {
 				if (bytesRead > 0) {
@@ -128,6 +127,22 @@ public class ScriptBrowser {
 			return null;
 		} catch (IOException e) {
 			Log.e(TAG, Log.getStackTraceString(e));
+			try {
+				InputStream errorStream = con.getErrorStream();
+				if (errorStream != null) {
+					in = new UnicodeReader(errorStream, null);
+					int bytesRead = 0;
+					StringBuilder errorStr = new StringBuilder();
+					while ((bytesRead = in.read(buffer, 0, 4096)) != -1) {
+						if (bytesRead > 0) {
+							errorStr.append(buffer, 0, bytesRead);
+						}
+					}
+					in.close();
+					Log.e(TAG, errorStr.toString());
+				}
+			} catch (Exception e1) {
+			}
 			return null;
 		} catch (Exception e) {
 			Log.e(TAG, Log.getStackTraceString(e));
