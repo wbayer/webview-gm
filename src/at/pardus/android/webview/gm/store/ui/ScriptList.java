@@ -16,11 +16,18 @@
 
 package at.pardus.android.webview.gm.store.ui;
 
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import at.pardus.android.webview.gm.model.Script;
 import at.pardus.android.webview.gm.model.ScriptId;
 import at.pardus.android.webview.gm.store.ScriptStore;
@@ -31,6 +38,148 @@ import at.pardus.webview.gm.R;
  */
 public class ScriptList {
 
+	class Listener implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
+		
+		ScriptAdapter scriptAdapter;
+		
+		Script script;
+		
+		View row;
+		
+		View delete;
+		
+		View edit;
+		
+		public Listener(ScriptAdapter scriptAdapter, Script script, View row) {
+			this.scriptAdapter = scriptAdapter;
+			this.script = script;
+			this.row = row;
+			
+			CheckBox active;
+			
+			delete = row.findViewById(R.id.sli_delete);
+			edit = row.findViewById(R.id.sli_edit);
+			active = (CheckBox) row.findViewById(R.id.sli_active);
+			
+			delete.setOnClickListener(this);
+			edit.setOnClickListener(this);
+			active.setOnCheckedChangeListener(this);			
+		}		
+		
+		public void update(Script script) {
+			this.script = script;
+		}
+		
+		@Override
+		public void onClick (View view) {
+			if (view == delete) {
+				scriptStore.delete(script);
+				scriptAdapter.refresh();
+			} else if (view == edit)
+				activity.openScriptEditor(script);				
+			
+		}
+		
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+			if (isChecked)
+				scriptStore.enable(script);
+			else
+				scriptStore.disable(script);
+		}
+	}
+	
+	static class Holder {
+		
+		Script script;
+		
+		CheckBox active;
+		
+		TextView name;
+		
+		TextView description;
+		
+		Listener listener;
+		
+		public Holder(View view, Listener listener) {
+			this.listener = listener;
+
+			active = (CheckBox) view.findViewById(R.id.sli_active);
+			name = (TextView) view.findViewById(R.id.sli_name);
+			description = (TextView) view.findViewById(R.id.sli_description);			
+		}
+		
+		public void fill(ScriptStore scriptStore, Script script) {
+			this.script = script;
+			
+			listener.update(script);
+			active.setChecked(scriptStore.isEnabled(script));
+			name.setText(script.getName());
+			description.setText(script.getDescription());
+		}
+	}
+	
+	class ScriptAdapter extends BaseAdapter {
+
+		/// The full (unfiltered) list of items.
+		Script script [];
+		
+		/// The script store
+		ScriptStore scriptStore;
+
+		public ScriptAdapter(ScriptStore scriptStore) {
+			this.scriptStore = scriptStore;
+			
+			script = scriptStore.getAll();
+		}
+		
+		public void refresh ()
+		{
+			script = scriptStore.getAll();
+			notifyDataSetChanged();
+		}
+		
+		@Override
+		public int getCount () {
+			return script.length;
+		}
+		
+		@Override
+		public Script getItem (int position) {
+			return script [position];
+		}
+		
+		@Override
+		public long getItemId (int position) {
+			return position;			
+		}
+	
+		@Override
+		public View getView (int position, View row, ViewGroup parent) {
+			LayoutInflater inflater;
+			Listener listener;
+			Holder holder;
+			Script script;
+
+			script = getItem(position);
+			holder = row != null ? (Holder) row.getTag() : null;
+			if (holder == null) {
+				inflater = activity.getLayoutInflater();			
+
+				row = inflater.inflate (R.layout.script_list_item, parent, false);
+				
+				listener = new Listener(this, script, row);
+				holder = new Holder (row, listener);
+				row.setTag (holder);
+			}
+
+			holder.fill (scriptStore, script);
+			
+			return row;
+		}		
+	}
+	
+	
 	protected ScriptManagerActivity activity;
 
 	protected ScriptStore scriptStore;
@@ -43,12 +192,18 @@ public class ScriptList {
 	 * @return the updated list view
 	 */
 	public View getScriptList() {
-		// TODO separate look (or list) for disabled scripts
-		Script[] scripts = scriptStore.getAll();
-		scriptList.setAdapter(new ArrayAdapter<Script>(activity,
-				R.layout.script_list_item, scripts));
+		scriptList.setAdapter(getScriptListAdapter ());
 		scriptList.invalidate();
 		return scriptList;
+	}
+
+	/**
+	 * Returns a list adapter rendering all the installed scripts
+	 * 
+	 * @return the list adapter
+	 */
+	public ListAdapter getScriptListAdapter() {
+		return new ScriptAdapter(scriptStore);
 	}
 
 	/**
@@ -70,12 +225,6 @@ public class ScriptList {
 		scriptList = (ListView) activity.getLayoutInflater().inflate(
 				R.layout.script_list, null);
 		scriptList.setTextFilterEnabled(true);
-		scriptList.setOnItemClickListener(new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				activity.openScriptEditor(getScriptId(position));
-			}
-		});
 		activity.registerForContextMenu(scriptList);
 	}
 
