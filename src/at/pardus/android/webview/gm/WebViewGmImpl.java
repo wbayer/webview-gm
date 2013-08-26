@@ -27,6 +27,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.Window;
 import at.pardus.android.webview.gm.model.ScriptId;
+import at.pardus.android.webview.gm.store.ScriptStore;
 import at.pardus.android.webview.gm.store.ScriptStoreSQLite;
 import at.pardus.android.webview.gm.store.ui.ScriptBrowser;
 import at.pardus.android.webview.gm.store.ui.ScriptEditor;
@@ -42,52 +43,84 @@ public class WebViewGmImpl extends ScriptManagerActivity {
 	private Stack<Integer> placeHistory = new Stack<Integer>();
 
 	private SharedPreferences preferences;
+	
+	private boolean startBrowser;
 
 	private static final Integer LIST = 1;
 
 	private static final Integer BROWSER = 2;
+	
+	public WebViewGmImpl() {
+		startBrowser=true;
+	}
+	
+	public WebViewGmImpl(boolean startBrowser) {
+		this.startBrowser=startBrowser;
+	}
 
 	@Override
 	public void openScriptList() {
-		if (scriptList == null) {
-			if (scriptStore == null) {
-				scriptStore = new ScriptStoreSQLite(this);
-				scriptStore.open();
-			}
-			scriptList = new ScriptList(this, scriptStore);
-		}
+		getScriptList();
 		setTitle(R.string.webviewgm_impl_app_name);
-		setContentView(scriptList.getScriptList());
+		setContentView(getScriptList ().getScriptList());
 		placeHistory.push(LIST);
+	}
+	
+	protected final ScriptList getScriptList() {
+		if (scriptList == null)
+			scriptList = createScriptList(); 
+		return scriptList;
+	}
+	
+	protected ScriptList createScriptList() {
+		return new ScriptList(this, getScriptStore());
 	}
 
 	@Override
 	public void openScriptEditor(ScriptId scriptId) {
-		if (scriptEditor == null) {
-			if (scriptStore == null) {
-				scriptStore = new ScriptStoreSQLite(this);
-				scriptStore.open();
-			}
-			scriptEditor = new ScriptEditor(this, scriptStore);
-		}
-		setContentView(scriptEditor.getEditForm(scriptId));
+		setContentView(getScriptEditor().getEditForm(scriptId));
 		placeHistory.push(null);
+	}
+	
+	protected final ScriptEditor getScriptEditor() {
+		if (scriptEditor == null)
+			scriptEditor = createScriptEditor ();
+		return scriptEditor;
+	}
+	
+	protected ScriptEditor createScriptEditor() {
+		return new ScriptEditor(this, getScriptStore());
 	}
 
 	@Override
 	public void openScriptBrowser() {
-		if (scriptBrowser == null) {
-			if (scriptStore == null) {
-				scriptStore = new ScriptStoreSQLite(this);
-				scriptStore.open();
-			}
-			scriptBrowser = new ScriptBrowser(this, scriptStore,
-					preferences.getString("lastUrl", "http://userscripts.org/"));
-		}
-		setContentView(scriptBrowser.getBrowser());
+		setContentView(getScriptBrowser().getBrowser());
 		placeHistory.push(BROWSER);
 	}
-
+	
+	protected final ScriptBrowser getScriptBrowser() {
+		if (scriptBrowser == null)
+			scriptBrowser = createScriptBrowser();
+		return scriptBrowser;
+	}
+	
+	protected ScriptBrowser createScriptBrowser() {
+		return new ScriptBrowser(this, getScriptStore(), 
+				preferences.getString("lastUrl", "http://userscripts.org/"));
+	}
+	
+	protected final ScriptStore getScriptStore() {
+		if (scriptStore == null) {
+			scriptStore = createScriptStore();
+			scriptStore.open();
+		}
+		return scriptStore != null ? scriptStore : createScriptStore();
+	}
+	
+	protected ScriptStoreSQLite createScriptStore() {
+		return new ScriptStoreSQLite(this);
+	}
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
@@ -113,7 +146,8 @@ public class WebViewGmImpl extends ScriptManagerActivity {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_PROGRESS);
 		preferences = getSharedPreferences("P", Context.MODE_PRIVATE);
-		openScriptBrowser();
+		if(startBrowser)
+			openScriptBrowser();
 	}
 
 	@Override
