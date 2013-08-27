@@ -51,7 +51,7 @@ public class ScriptStoreSQLite implements ScriptStore {
 
 	@Override
 	public Script[] get(String url) {
-		Script[] scripts = cache.get(url);
+		ScriptData[] scripts = cache.get(url);
 		if (scripts == null) {
 			if (dbHelper == null) {
 				Log.w(TAG, "Cannot get user scripts (database not available)");
@@ -106,6 +106,19 @@ public class ScriptStoreSQLite implements ScriptStore {
 		}
 		dbHelper.updateScriptEnabled(id, true);
 		initCache();
+	}
+	
+	@Override
+	public boolean isEnabled(ScriptId id) {
+		if (dbHelper == null) {
+			Log.e(TAG, "Cannot get user script (database not available)");
+			return false;
+		}
+		ScriptData[] scripts = dbHelper.selectScripts(new ScriptId[] { id }, null);
+		if (scripts.length == 0) {
+			return false;
+		}
+		return scripts[0].enabled;
 	}
 
 	@Override
@@ -334,7 +347,7 @@ public class ScriptStoreSQLite implements ScriptStore {
 		 * @return an array of matching script objects; an empty array if none
 		 *         found
 		 */
-		public Script[] selectScripts(ScriptId[] ids, Boolean enabled) {
+		public ScriptData[] selectScripts(ScriptId[] ids, Boolean enabled) {
 			String selectionStr = null, selectionIdStr = null;
 			String[] selectionArgsArr = null, selectionIdArgsArr = null;
 			if (ids != null || enabled != null) {
@@ -342,7 +355,7 @@ public class ScriptStoreSQLite implements ScriptStore {
 				List<String> selectionArgs = new ArrayList<String>();
 				if (ids != null) {
 					if (ids.length == 0) {
-						return new Script[0];
+						return new ScriptData[0];
 					}
 					makeScriptIdSelectionArgs(ids, selection, selectionArgs);
 					selectionIdStr = selection.toString();
@@ -368,7 +381,7 @@ public class ScriptStoreSQLite implements ScriptStore {
 					selectionIdStr, selectionIdArgsArr);
 			Cursor cursor = db.query(TBL_SCRIPT, COLS_SCRIPT, selectionStr,
 					selectionArgsArr, null, null, null);
-			Script[] scriptsArr = new Script[cursor.getCount()];
+			ScriptData[] scriptsArr = new ScriptData[cursor.getCount()];
 			int i = 0;
 			while (cursor.moveToNext()) {
 				String name = cursor.getString(0);
@@ -392,11 +405,12 @@ public class ScriptStoreSQLite implements ScriptStore {
 				int unwrap = cursor.getInt(8);
 				String version = cursor.getString(9);
 				String content = cursor.getString(10);
+				boolean isEnabled = cursor.getInt(11) != 0; 
 				// TODO add require and resource data
-				scriptsArr[i] = new Script(name, namespace, excludeArr,
+				scriptsArr[i] = new ScriptData(name, namespace, excludeArr,
 						includeArr, matchArr, description, downloadurl,
 						updateurl, installurl, icon, runat, unwrap == 1,
-						version, content);
+						version, content, isEnabled);
 				i++;
 			}
 			cursor.close();
@@ -760,6 +774,27 @@ public class ScriptStoreSQLite implements ScriptStore {
 		}
 
 	}
+	
+	/**
+	 * An entry in the cache script. It contains some status information as
+	 * well as the script itself (which is meant to be immutable).
+	 */
+	private static class ScriptData extends Script {
+		
+		public boolean enabled;
+		
+		public ScriptData(String name, String namespace, String[] exclude,
+				String[] include, String[] match, String description,
+				String downloadurl, String updateurl, String installurl,
+				String icon, String runAt, boolean unwrap, String version,
+				String content, boolean enabled) {
+			super(name, namespace, exclude, include, match, description,
+			      downloadurl, updateurl, installurl, icon, runAt, unwrap, version,
+			      content);
+			this.enabled = enabled;
+		}
+		
+	}
 
 	/**
 	 * Cache of user scripts matching most recently accessed URLs and all
@@ -769,14 +804,14 @@ public class ScriptStoreSQLite implements ScriptStore {
 
 		private static final int CACHE_SIZE = 62;
 
-		private LinkedHashMap<String, Script[]> urlScripts = new LinkedHashMap<String, Script[]>(
+		private LinkedHashMap<String, ScriptData[]> urlScripts = new LinkedHashMap<String, ScriptData[]>(
 				CACHE_SIZE + 2, 1.0f, true) {
 
 			private static final long serialVersionUID = 1L;
 
 			@Override
 			protected boolean removeEldestEntry(
-					Map.Entry<String, Script[]> eldest) {
+					Map.Entry<String, ScriptData[]> eldest) {
 				return size() > CACHE_SIZE;
 			}
 
@@ -792,7 +827,7 @@ public class ScriptStoreSQLite implements ScriptStore {
 		 * @return if the URL is cached either the found user scripts or an
 		 *         empty array; if the URL is not cached then null
 		 */
-		public synchronized Script[] get(String url) {
+		public synchronized ScriptData[] get(String url) {
 			return urlScripts.get(url);
 		}
 
@@ -804,7 +839,7 @@ public class ScriptStoreSQLite implements ScriptStore {
 		 * @param scripts
 		 *            the user scripts to execute at that URL
 		 */
-		public synchronized void put(String url, Script[] scripts) {
+		public synchronized void put(String url, ScriptData[] scripts) {
 			urlScripts.put(url, scripts);
 		}
 

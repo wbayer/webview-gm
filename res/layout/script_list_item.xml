@@ -1,8 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="8dp"
-    android:textSize="16sp" >
+    android:layout_height="wrap_content"
+    android:orientation="horizontal" >
 
-</TextView>
+    <CheckBox
+        android:id="@+id/sli_active"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+    
+    <LinearLayout
+        android:layout_width="0dip" 
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="1">
+        
+        <TextView
+            android:id="@+id/sli_name"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+        <TextView
+            android:id="@+id/sli_description"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            
+            <ImageButton
+                android:id="@+id/sli_edit"
+                android:layout_width="48dip"
+                android:layout_height="48dip"
+                android:src="@drawable/edit" />            
+            <ImageButton
+                android:id="@+id/sli_delete"
+                android:layout_width="48dip"
+                android:layout_height="48dip"
+                android:src="@drawable/delete" />            
+        </LinearLayout>
+            
+        
+    </LinearLayout>
+
+</LinearLayout>

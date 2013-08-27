@@ -87,6 +87,15 @@ public interface ScriptStore {
 	public void delete(ScriptId id);
 
 	/**
+	 * Tells if an user script is enabled.
+	 * 
+	 * @param id
+	 *            the ID of the script
+	 * @return <tt>true</tt> if enabled
+	 */
+	public boolean isEnabled(ScriptId id);
+
+	/**
 	 * Gets all names of values stored by a user script.
 	 * 
 	 * @param id
