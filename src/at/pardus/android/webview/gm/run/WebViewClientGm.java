@@ -22,6 +22,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import at.pardus.android.webview.gm.model.Script;
 import at.pardus.android.webview.gm.store.ScriptStore;
+import at.pardus.android.webview.gm.model.ScriptRequire;
+import at.pardus.android.webview.gm.model.ScriptResource;
 
 /**
  * A user script enabled WebViewClient to be used by WebViewGm.
@@ -40,8 +42,6 @@ public class WebViewClientGm extends WebViewClient {
 
 	private static final String JSMISSINGFUNCTIONS = "var GM_xmlhttpRequest = "
 			+ JSMISSINGFUNCTION + "var GM_info = " + JSMISSINGFUNCTION
-			+ "var GM_getResourceText = " + JSMISSINGFUNCTION
-			+ "var GM_getResourceURL = " + JSMISSINGFUNCTION
 			+ "var GM_openInTab = " + JSMISSINGFUNCTION
 			+ "var GM_registerMenuCommand = " + JSMISSINGFUNCTION;
 
@@ -138,14 +138,30 @@ public class WebViewClientGm extends WebViewClient {
 						+ "document.getElementsByTagName('head')[0].appendChild(style); };\n";
 				jsApi += "var GM_log = function(message) { " + jsBridgeName
 						+ ".log(" + defaultSignature + ", message); };\n";
+				jsApi += "var GM_getResourceURL = function(resourceName) { return "
+						+ jsBridgeName + ".getResourceURL(" + defaultSignature
+						+ ", resourceName); };\n";
+				jsApi += "var GM_getResourceText = function(resourceName) { return "
+						+ jsBridgeName + ".getResourceText(" + defaultSignature
+						+ ", resourceName); };\n";
 				// TODO implement missing functions
 				jsApi += JSMISSINGFUNCTIONS;
+
+				// Get @require'd scripts to inject for this script.
+				ScriptRequire[] requires = script.getRequires();
+				String jsAllRequires = "";
+
+				for (ScriptRequire currentRequire: requires) {
+					jsAllRequires += (currentRequire.getContent() + "\n");
+				}
+
 				if (script.isUnwrap()) {
-					view.loadUrl("javascript:\n" + jsApi + jsBeforeScript
+					view.loadUrl("javascript:\n" + jsApi
+							+ jsAllRequires + jsBeforeScript
 							+ script.getContent() + jsAfterScript);
 				} else {
 					view.loadUrl("javascript:\n" + JSCONTAINERSTART + jsApi
-							+ jsBeforeScript + script.getContent()
+							+ jsAllRequires + jsBeforeScript + script.getContent()
 							+ jsAfterScript + JSCONTAINEREND);
 				}
 			}

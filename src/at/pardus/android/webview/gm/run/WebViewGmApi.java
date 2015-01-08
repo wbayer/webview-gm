@@ -19,6 +19,8 @@ package at.pardus.android.webview.gm.run;
 import android.util.Log;
 import at.pardus.android.webview.gm.model.ScriptId;
 import at.pardus.android.webview.gm.store.ScriptStore;
+import at.pardus.android.webview.gm.model.Script;
+import at.pardus.android.webview.gm.model.ScriptResource;
 
 /**
  * Contains methods simulating GM functions that need access to the
@@ -173,5 +175,76 @@ public class WebViewGmApi {
 			return;
 		}
 		Log.i(TAG, scriptName + ", " + scriptNamespace + ": " + message);
+	}
+
+	/**
+	 * Equivalent of GM_getResourceURL. Retrieve URL of @resource'd data.
+	 *
+	 * @param scriptName
+	 *        the name of the calling script
+	 * @param scriptNamespace
+	 *        the namespace of the calling script
+	 * @param secret
+	 *        the transmitted secret to validate
+	 * @param resourceName
+	 *        the name of the resource to retrieve from the database.
+	 * @see <tt><a href="http://wiki.greasespot.net/GM_getResourceURL">GM_getResourceURL</a></tt>
+	 */
+	public String getResourceURL(String scriptName, String scriptNamespace,
+			String secret, String resourceName) {
+		if (!this.secret.equals(secret)) {
+			Log.e(TAG, "Call to \"getResourceURL\" did not supply correct secret");
+			return "";
+		}
+
+		Script script = scriptStore.get(new ScriptId(scriptName, scriptNamespace));
+
+		for (ScriptResource resource: script.getResources()) {
+			Log.i(TAG, "Resource: " + resource.getName() + " want: " + resourceName + " uri: " + resource.getJavascriptUrl());
+			if (!resource.getName().equals(resourceName)) {
+				continue;
+			}
+
+			return resource.getJavascriptUrl();
+		}
+
+		Log.e(TAG, "Requested resource: " + resourceName + " not found! (" + script.getResources().length + ")" );
+
+		return "";
+	}
+
+	/**
+	 * Equivalent of GM_getResourceText. Retrieve @resource'd data.
+	 * as UTF-8 encoded text.
+	 *
+	 * @param scriptName
+	 *        the name of the calling script
+	 * @param scriptNamespace
+	 *        the namespace of the calling script
+	 * @param secret
+	 *        the transmitted secret to validate
+	 * @param resourceName
+	 *        the name of the resource to retrieve from the database.
+	 * @see <tt><a href="http://wiki.greasespot.net/GM_getResourceText">GM_getResourceText</a></tt>
+	 */
+	public String getResourceText(String scriptName, String scriptNamespace,
+			String secret, String resourceName) {
+		if (!this.secret.equals(secret)) {
+			Log.e(TAG, "Call to \"getResourceText\" did not supply correct secret");
+			return "";
+		}
+
+		Script script = scriptStore.get(new ScriptId(scriptName, scriptNamespace));
+
+		for (ScriptResource resource: script.getResources()) {
+			if (!resource.getName().equals(resourceName)) {
+				continue;
+			}
+
+			String s = resource.getJavascriptString();
+			return resource.getJavascriptString();
+		}
+
+		return "";
 	}
 }

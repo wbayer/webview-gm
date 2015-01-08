@@ -22,6 +22,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import at.pardus.android.webview.gm.util.DownloadHelper;
+
 /**
  * Immutable object describing all sections of a user script. The class includes
  * a static function to create a new Script object from a string.
@@ -34,10 +36,11 @@ public class Script extends ScriptMetadata {
 			String[] include, String[] match, String description,
 			String downloadurl, String updateurl, String installurl,
 			String icon, String runAt, boolean unwrap, String version,
+			ScriptRequire[] requires, ScriptResource[] resources,
 			String content) {
 		super(name, namespace, exclude, include, match, description,
 				downloadurl, updateurl, installurl, icon, runAt, unwrap,
-				version);
+				version, requires, resources);
 		this.content = content;
 	}
 
@@ -83,6 +86,9 @@ public class Script extends ScriptMetadata {
 			updateurl = downloadurl;
 		}
 		Set<String> exclude = new HashSet<String>(), include = new HashSet<String>(), match = new HashSet<String>();
+		Set<ScriptRequire> requires = new HashSet<ScriptRequire>();
+		Set<ScriptResource> resources = new HashSet<ScriptResource>();
+
 		Pattern pattern = Pattern.compile("// @(\\S+)(?:\\s+(.*))?");
 		Scanner scanner = new Scanner(scriptStr);
 		boolean inMetaBlock = false;
@@ -129,6 +135,17 @@ public class Script extends ScriptMetadata {
 						}
 					} else if (propertyName.equals("version")) {
 						version = propertyValue;
+					} else if (propertyName.equals("require")) {
+						requires.add(new ScriptRequire(propertyValue, ""));
+					} else if (propertyName.equals("resource")) {
+						Pattern resourcePattern = Pattern.compile("(\\S+)\\s+(.*)");
+						Matcher resourceMatcher = resourcePattern.matcher(propertyValue);
+						if (!resourceMatcher.matches()) {
+							return null;
+						}
+						String resourceName = resourceMatcher.group(1);
+						String resourceUrl = resourceMatcher.group(2);
+						resources.add(new ScriptResource(resourceName, resourceUrl, null));
 					} else if (propertyName.equals("exclude")) {
 						exclude.add(propertyValue);
 					} else if (propertyName.equals("include")) {
@@ -149,6 +166,14 @@ public class Script extends ScriptMetadata {
 			return null;
 		}
 		String[] excludeArr = null, includeArr = null, matchArr = null;
+		ScriptRequire[] requireArr = null;
+		ScriptResource[] resourceArr = null;
+		if (requires.size() > 0) {
+			requireArr = requires.toArray(new ScriptRequire[requires.size()]);
+		}
+		if (resources.size() > 0) {
+			resourceArr = resources.toArray(new ScriptResource[resources.size()]);
+		}
 		if (exclude.size() > 0) {
 			excludeArr = exclude.toArray(new String[exclude.size()]);
 		}
@@ -160,6 +185,64 @@ public class Script extends ScriptMetadata {
 		}
 		return new Script(name, namespace, excludeArr, includeArr, matchArr,
 				description, downloadurl, updateurl, installurl, icon, runAt,
-				unwrap, version, scriptStr);
+				unwrap, version, requireArr, resourceArr, scriptStr);
+	}
+
+	/**
+	 * Downloads all @require'd scripts for the current script.
+	 *
+	 * @return a boolean value indicating whether the download operation was successful
+	 *         for all @require entries.
+	 * @see <tt><a href="http://wiki.greasespot.net/Metadata_Block">Metadata Block</a></tt>
+	 */
+	public boolean downloadRequires()
+	{
+		ScriptRequire[] requires = this.getRequires();
+
+		// This script has no @require metadata directives.
+		if (requires == null) {
+			return true;
+		}
+
+		for (ScriptRequire currentRequire: requires) {
+			String requireContent = DownloadHelper.downloadScript(currentRequire.getUrl());
+
+			if (requireContent == null) {
+				return false;
+			}
+
+			currentRequire.setContent(requireContent);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Downloads all @resource'd files for the current script.
+	 *
+	 * @return a boolean value indicating whether the download operation was successful
+	 *         for all @resource entries.
+	 * @see <tt><a href="http://wiki.greasespot.net/Metadata_Block">Metadata Block</a></tt>
+	 */
+	public boolean downloadResources()
+	{
+		ScriptResource[] resources = this.getResources();
+
+		// This script has no @resource metadata directives.
+		if (resources == null) {
+			return true;
+		}
+
+		for (ScriptResource currentResource: resources) {
+			byte[] resourceData = DownloadHelper.downloadBytes(currentResource.getUrl());
+
+			if (resourceData == null) {
+				return false;
+			}
+
+			currentResource.setData(resourceData);
+		}
+
+		return true;
 	}
 }
