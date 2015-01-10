@@ -43,8 +43,6 @@ public class ScriptMetadata extends ScriptCriteria {
 
 	private ScriptResource[] resources;
 
-	private String[] requireContent;
-
 	private boolean unwrap;
 
 	private String version;

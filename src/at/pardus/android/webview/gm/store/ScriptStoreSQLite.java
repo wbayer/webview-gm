@@ -351,15 +351,12 @@ public class ScriptStoreSQLite implements ScriptStore {
 			Log.i(TAG, "Upgrading database " + DB + " from version "
 					+ oldVersion + " to " + newVersion);
 
-			switch (newVersion) {
-				case DB_SCHEMA_VERSION_2:
-					db.execSQL(TBL_REQUIRE_CREATE);
-					db.execSQL(TBL_RESOURCE_CREATE);
-				break;
-				default:
-					Log.e(TAG, "Unexpected database upgrade from version"
+			if (newVersion >= DB_SCHEMA_VERSION_2) {
+				db.execSQL(TBL_REQUIRE_CREATE);
+				db.execSQL(TBL_RESOURCE_CREATE);
+			} else {
+				Log.e(TAG, "Unexpected database upgrade from version"
 					+ oldVersion + " to " + newVersion + ". No known upgrade path");
-					break;
 			}
 		}
 
@@ -567,7 +564,7 @@ public class ScriptStoreSQLite implements ScriptStore {
 		 *             arguments replaced by ?)
 		 * @param selectionArgs
 		 *             the arguments to use in the selection string
-		 * @return matching patterns found in the table mapped to script IDs; an
+		 * @return matching requires found in the table mapped to script IDs; an
 		 *         empty map if none found
 		 */
 		private Map<ScriptId, List<ScriptRequire>> selectRequires(String tblName,
@@ -601,8 +598,8 @@ public class ScriptStoreSQLite implements ScriptStore {
 		 *           arguments replaced by ?)
 		 * @param selectionArgs
 		 *           the arguments to use in the selection string
-		 * @return matching patterns found in the table mapped to script IDs; an
-		 *         empty map if none found
+		 * @return matching resources found in the table mapped to script IDs;
+		 *         an empty map if none found
 		 */
 		private Map<ScriptId, List<ScriptResource>> selectResources(String tblName,
 				String selection, String[] selectionArgs) {
