@@ -35,10 +35,6 @@ public class ScriptRequire {
 		return this.url;
 	}
 
-	public void setUrl(String newUrl) {
-		this.url = newUrl;
-	}
-
 	public String getContent() {
 		return this.content;
 	}

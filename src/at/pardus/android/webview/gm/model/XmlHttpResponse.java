@@ -52,19 +52,6 @@ public class XmlHttpResponse {
 		this.context = context;
 	}
 
-	public XmlHttpResponse(int readyState, String responseHeaders, String responseText, int status, String statusText, JSONObject context, String finalUrl, boolean lengthComputable, long loaded, long total) {
-		this.readyState = readyState;
-		this.responseHeaders = responseHeaders;
-		this.responseText = responseText;
-		this.status = status;
-		this.statusText = statusText;
-		this.context = context;
-		this.finalUrl = finalUrl;
-		this.lengthComputable = lengthComputable;
-		this.loaded = loaded;
-		this.total = total;
-	}
-
 	public String toJSONString() {
 		JSONObject self = toJSONObject();
 
@@ -72,7 +59,7 @@ public class XmlHttpResponse {
 			return "";
 		}
 
-		return self.quote(self.toString());
+		return JSONObject.quote(self.toString());
 	}
 
 	public JSONObject toJSONObject() {

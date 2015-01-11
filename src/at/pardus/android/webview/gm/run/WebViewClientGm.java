@@ -23,7 +23,6 @@ import android.webkit.WebViewClient;
 import at.pardus.android.webview.gm.model.Script;
 import at.pardus.android.webview.gm.store.ScriptStore;
 import at.pardus.android.webview.gm.model.ScriptRequire;
-import at.pardus.android.webview.gm.model.ScriptResource;
 
 /**
  * A user script enabled WebViewClient to be used by WebViewGm.

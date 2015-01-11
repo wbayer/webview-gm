@@ -246,7 +246,6 @@ public class WebViewGmApi {
 				continue;
 			}
 
-			String s = resource.getJavascriptString();
 			return resource.getJavascriptString();
 		}
 

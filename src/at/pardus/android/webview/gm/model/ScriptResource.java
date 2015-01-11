@@ -43,16 +43,8 @@ public class ScriptResource {
 		return this.name;
 	}
 
-	public void setName(String newName) {
-		this.name = newName;
-	}
-
 	public String getUrl() {
 		return this.url;
-	}
-
-	public void setUrl(String newUrl) {
-		this.url = newUrl;
 	}
 
 	public byte[] getData() {
@@ -83,7 +75,7 @@ public class ScriptResource {
 	 */
 	public String getJavascriptUrl() {
 		String extension = MimeTypeMap.getFileExtensionFromUrl(this.url);
-		String mimeType = "";
+		String mimeType;
 
 		// Fallback to "bytes" if we can't determine the actual mimetype.
 		if (extension == null || TextUtils.isEmpty(extension)) {

@@ -21,7 +21,6 @@ import android.util.Base64;
 import android.util.Log;
 import android.webkit.WebView;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -63,7 +62,7 @@ public class XmlHttpRequest {
 	private JSONObject upload;
 	private String url;
 	private String user;
-	private WebView view;
+	private final WebView view;
 
 	public XmlHttpRequest(WebView view, String jsonRequestString) {
 		// Register the view so that we can execute JS callbacks (e.g. onload)
@@ -115,7 +114,7 @@ public class XmlHttpRequest {
 		}
 
 		Map<String,String> headers = new HashMap<String,String>();
-		for (Iterator<String> keyIterator =  this.headers.keys(); keyIterator.hasNext();) {
+		for (Iterator<String> keyIterator = this.headers.keys(); keyIterator.hasNext();) {
 			String keyName = keyIterator.next();
 
 			try {
@@ -126,10 +125,6 @@ public class XmlHttpRequest {
 		}
 
 		return headers;
-	}
-
-	public void abort() {
-
 	}
 
 	/**
@@ -162,7 +157,7 @@ public class XmlHttpRequest {
 		StringBuilder out = new StringBuilder();
 		URL url;
 		int totalBytesRead = 0;
-		int contentLength = 0;
+		int contentLength;
 		byte[] outputData = this.getDataBytes();
 
 		try {
@@ -179,17 +174,14 @@ public class XmlHttpRequest {
 			response.setReadyState(XmlHttpResponse.READY_STATE_OPENED);
 			executeOnReadyStateChangeCallback(response);
 
-			// Set connection properties request in the GM_xmlHttpRequest
-			if ((this.method == "PUT") || (this.method == "POST") || (this.method == "TRACE")) {
+			// Set connection properties for the GM_xmlhttpRequest
+			if (outputData != null) {
 				httpConn.setDoOutput(true);
-
-				if (outputData != null) {
-					httpConn.setRequestProperty("Content-Length", Integer.toString(outputData.length));
-				}
+				httpConn.setRequestProperty("Content-Length", Integer.toString(outputData.length));
 			}
 
-			if ((this.user != "") && (this.password != "")) {
-				httpConn.setRequestProperty("Authorization", "Basic " + Base64.encode((this.user + ":" + this.password).getBytes("UTF-8"), Base64.DEFAULT));
+			if ((!this.user.equals("")) && (!this.password.equals(""))) {
+				httpConn.setRequestProperty("Authorization", "Basic " + Base64.encodeToString((this.user + ":" + this.password).getBytes("UTF-8"), Base64.DEFAULT));
 			}
 
 			httpConn.setRequestMethod(this.method);
@@ -201,7 +193,7 @@ public class XmlHttpRequest {
 				}
 			}
 
-			if (this.overrideMimeType != "") {
+			if (!this.overrideMimeType.equals("")) {
 				httpConn.setRequestProperty("Content-Type", this.overrideMimeType);
 			}
 
@@ -224,7 +216,7 @@ public class XmlHttpRequest {
 			executeOnReadyStateChangeCallback(response);
 
 			if (httpConn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-				Log.e(TAG, "Exception downloading url: " + this.url + " HTTP Response " + httpConn.getResponseCode());
+				Log.e(TAG, "HTTP error from url: " + this.url + " HTTP Response " + httpConn.getResponseCode());
 				httpConn.disconnect();
 				executeOnErrorCallback(response);
 				return response;
@@ -241,40 +233,39 @@ public class XmlHttpRequest {
 			response.setReadyState(XmlHttpResponse.READY_STATE_LOADING);
 			executeOnReadyStateChangeCallback(response);
 
-			if ((this.method == "POST") || (this.method == "PUT") || (this.method == "TRACE")) {
+			// Begin transmitting data if requested.
+			if (outputData != null) {
 				OutputStream outputStream = httpConn.getOutputStream();
 				outputStream.write(outputData);
 				outputStream.close();
-			} else {
-				// Begin reading DATA from HTTP Connection.
-				InputStream inputStream = httpConn.getInputStream();
-
-				ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-				int bytesRead = -1;
-				char[] buffer = new char[4096];
-				Reader in = new UnicodeReader(inputStream, httpConn.getContentEncoding());
-
-				while ((bytesRead = in.read(buffer, 0, 4096)) != -1) {
-					if (bytesRead <= 0) {
-						break;
-					}
-
-					// Progress events are always 1-step behind where we currently are.
-					if ((totalBytesRead) > 0 && (contentLength > 0)) {
-						response.setLoaded(totalBytesRead);
-						executeOnProgressCallback(response);
-					}
-
-					out.append(buffer, 0, bytesRead);
-					totalBytesRead += bytesRead;
-
-				}
-
-				inputStream.close();
-				response.setResponseText(out.toString());
 			}
 
+			// Begin receiving any response data/
+			InputStream inputStream = httpConn.getInputStream();
+			int bytesRead;
+			char[] buffer = new char[4096];
+			Reader in = new UnicodeReader(inputStream, httpConn.getContentEncoding());
+
+			while ((bytesRead = in.read(buffer, 0, 4096)) != -1) {
+				if (bytesRead <= 0) {
+					break;
+				}
+
+				// Progress events are always 1-step behind where we currently are.
+				if ((totalBytesRead) > 0 && (contentLength > 0)) {
+					response.setLoaded(totalBytesRead);
+					executeOnProgressCallback(response);
+				}
+
+				out.append(buffer, 0, bytesRead);
+				totalBytesRead += bytesRead;
+			}
+
+			// Clean up open resources & report completion.
+			inputStream.close();
 			httpConn.disconnect();
+
+			response.setResponseText(out.toString());
 
 			response.setReadyState(XmlHttpResponse.READY_STATE_DONE);
 			executeOnReadyStateChangeCallback(response);
