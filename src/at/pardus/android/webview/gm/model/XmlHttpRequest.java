@@ -100,6 +100,10 @@ public class XmlHttpRequest {
 	}
 
 	public byte[] getDataBytes() {
+		if (this.data.length() == 0) {
+			return null;
+		}
+
 		try {
 			return this.data.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
@@ -206,6 +210,13 @@ public class XmlHttpRequest {
 			// Explicitly initiate connection.
 			httpConn.connect();
 
+			// Begin transmitting data if requested.
+			if (outputData != null) {
+				OutputStream outputStream = httpConn.getOutputStream();
+				outputStream.write(outputData);
+				outputStream.close();
+			}
+
 			response.setStatus(httpConn.getResponseCode());
 			response.setStatusText(httpConn.getResponseMessage());
 
@@ -232,13 +243,6 @@ public class XmlHttpRequest {
 
 			response.setReadyState(XmlHttpResponse.READY_STATE_LOADING);
 			executeOnReadyStateChangeCallback(response);
-
-			// Begin transmitting data if requested.
-			if (outputData != null) {
-				OutputStream outputStream = httpConn.getOutputStream();
-				outputStream.write(outputData);
-				outputStream.close();
-			}
 
 			// Begin receiving any response data/
 			InputStream inputStream = httpConn.getInputStream();

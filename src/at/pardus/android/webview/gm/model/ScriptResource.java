@@ -62,7 +62,7 @@ public class ScriptResource {
 	 *         variable
 	 */
 	public String getDataBase64() {
-		return Base64.encodeToString(this.data, Base64.URL_SAFE);
+		return Base64.encodeToString(this.data, Base64.DEFAULT);
 	}
 
 	/**
