@@ -21,6 +21,8 @@ import at.pardus.android.webview.gm.model.ScriptId;
 import at.pardus.android.webview.gm.store.ScriptStore;
 import at.pardus.android.webview.gm.model.Script;
 import at.pardus.android.webview.gm.model.ScriptResource;
+import at.pardus.android.webview.gm.model.XmlHttpRequest;
+import at.pardus.android.webview.gm.model.XmlHttpResponse;
 
 /**
  * Contains methods simulating GM functions that need access to the
@@ -29,6 +31,8 @@ import at.pardus.android.webview.gm.model.ScriptResource;
 public class WebViewGmApi {
 
 	private static final String TAG = WebViewGmApi.class.getName();
+
+	private WebViewGm view;
 
 	private ScriptStore scriptStore;
 
@@ -42,7 +46,8 @@ public class WebViewGmApi {
 	 * @param secret
 	 *            the secret string to compare in each call
 	 */
-	public WebViewGmApi(ScriptStore scriptStore, String secret) {
+	public WebViewGmApi(WebViewGm view, ScriptStore scriptStore, String secret) {
+		this.view = view;
 		this.scriptStore = scriptStore;
 		this.secret = secret;
 	}
@@ -243,6 +248,37 @@ public class WebViewGmApi {
 
 			String s = resource.getJavascriptString();
 			return resource.getJavascriptString();
+		}
+
+		return "";
+	}
+
+	/**
+	 * Equivalent of GM_getResourceText. Retrieve @resource'd data.
+	 * as UTF-8 encoded text.
+	 *
+	 * @param scriptName
+	 *        the name of the calling script
+	 * @param scriptNamespace
+	 *        the namespace of the calling script
+	 * @param secret
+	 *        the transmitted secret to validate
+	 * @param jsonRequestString
+	 *        the HTTP Request object encoded as a JSON string.
+	 * @see <tt><a href="http://wiki.greasespot.net/GM_xmlhttpRequest">GM_xmlhttpRequest</a></tt>
+	 */
+	public String xmlHttpRequest(String scriptName, String scriptNamespace,
+								  String secret, String jsonRequestString) {
+		if (!this.secret.equals(secret)) {
+			Log.e(TAG, "Call to \"xmlHttpRequest\" did not supply correct secret");
+			return "";
+		}
+
+		XmlHttpRequest request = new XmlHttpRequest(this.view, jsonRequestString);
+		XmlHttpResponse response = request.execute();
+
+		if (response != null) {
+			return response.toJSONString();
 		}
 
 		return "";

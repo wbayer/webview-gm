@@ -136,7 +136,7 @@ public class DownloadHelper {
 			buffer = byteArrayOutputStream.toByteArray();
 			inputStream.close();
 			return buffer;
-		}catch (IOException e)
+		} catch (IOException e)
 		{
 			Log.e(TAG, "Exception downloading url: " + downloadUrl + " as file: " + e.getMessage());
 		}

@@ -70,7 +70,7 @@ public class ScriptResource {
 	 *         variable
 	 */
 	public String getDataBase64() {
-		return Base64.encodeToString(this.data, Base64.DEFAULT);
+		return Base64.encodeToString(this.data, Base64.URL_SAFE);
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class ScriptResource {
 			mimeType = mimeTypeMap.getMimeTypeFromExtension(extension);
 		}
 
-		return "data:" + mimeType + ";base64," + getDataBase64() + "\n";
+		return "data:" + mimeType + ";base64," + getDataBase64();
 	}
 
 	/**

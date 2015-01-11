@@ -40,10 +40,10 @@ public class WebViewClientGm extends WebViewClient {
 
 	private static final String JSMISSINGFUNCTION = "function() { GM_log(\"Called function not yet implemented\"); };\n";
 
-	private static final String JSMISSINGFUNCTIONS = "var GM_xmlhttpRequest = "
-			+ JSMISSINGFUNCTION + "var GM_info = " + JSMISSINGFUNCTION
-			+ "var GM_openInTab = " + JSMISSINGFUNCTION
-			+ "var GM_registerMenuCommand = " + JSMISSINGFUNCTION;
+	private static final String JSMISSINGFUNCTIONS = "var GM_info = "
+			+ JSMISSINGFUNCTION + "var GM_openInTab = "
+			+ JSMISSINGFUNCTION + "var GM_registerMenuCommand = "
+			+ JSMISSINGFUNCTION;
 
 	private ScriptStore scriptStore;
 
@@ -117,6 +117,7 @@ public class WebViewClientGm extends WebViewClient {
 						+ script.getName().replace("\"", "\\\"") + "\", \""
 						+ script.getNamespace().replace("\"", "\\\"")
 						+ "\", \"" + secret + "\"";
+				String signatureName = defaultSignature.replaceAll("[^0-9a-zA-Z_]", "");
 				String jsApi = JSUNSAFEWINDOW;
 				jsApi += "var GM_listValues = function() { return "
 						+ jsBridgeName + ".listValues(" + defaultSignature
@@ -144,15 +145,37 @@ public class WebViewClientGm extends WebViewClient {
 				jsApi += "var GM_getResourceText = function(resourceName) { return "
 						+ jsBridgeName + ".getResourceText(" + defaultSignature
 						+ ", resourceName); };\n";
+				jsApi += "var GM_xmlhttpRequest = function(details) { \n"
+						+ "if (details.onabort) { unsafeWindow." + signatureName
+						+ "GM_onAbortCallback = details.onabort;\n"
+						+ "details.onabort = '" + signatureName + "GM_onAbortCallback'; }\n"
+						+ "if (details.onerror) { unsafeWindow." + signatureName
+						+ "GM_onErrorCallback = details.onerror;\n"
+						+ "details.onerror = '" + signatureName + "GM_onErrorCallback'; }\n"
+						+ "if (details.onload) { unsafeWindow." + signatureName
+						+ "GM_onLoadCallback = details.onload;\n"
+						+ "details.onload = '" + signatureName + "GM_onLoadCallback'; }\n"
+						+ "if (details.onprogress) { unsafeWindow." + signatureName
+						+ "GM_onProgressCallback = details.onprogress;\n"
+						+ "details.onprogress = '" + signatureName + "GM_onProgressCallback'; }\n"
+						+ "if (details.onreadystatechange) { unsafeWindow." + signatureName
+						+ "GM_onReadyStateChange = details.onreadystatechange;\n"
+						+ "details.onreadystatechange = '" + signatureName + "GM_onReadyStateChange'; }\n"
+						+ "if (details.ontimeout) { unsafeWindow." + signatureName
+						+ "GM_onTimeoutCallback = details.ontimeout;\n"
+						+ "details.ontimeout = '" + signatureName + "GM_onTimeoutCallback'; }\n"
+						+ "return JSON.parse(" + jsBridgeName + ".xmlHttpRequest(" + defaultSignature
+						+ ", JSON.stringify(details))); };\n";
 				// TODO implement missing functions
 				jsApi += JSMISSINGFUNCTIONS;
 
 				// Get @require'd scripts to inject for this script.
-				ScriptRequire[] requires = script.getRequires();
 				String jsAllRequires = "";
-
-				for (ScriptRequire currentRequire: requires) {
-					jsAllRequires += (currentRequire.getContent() + "\n");
+				ScriptRequire[] requires = script.getRequires();
+				if (requires != null) {
+					for (ScriptRequire currentRequire : requires) {
+						jsAllRequires += (currentRequire.getContent() + "\n");
+					}
 				}
 
 				if (script.isUnwrap()) {
