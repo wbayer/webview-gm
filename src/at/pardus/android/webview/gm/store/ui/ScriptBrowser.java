@@ -82,18 +82,6 @@ public class ScriptBrowser {
 			return;
 		}
 
-		if (!script.downloadRequires()) {
-			Log.d(TAG, "Error downloading @require'd scripts!");
-			makeToastOnUiThread(activity.getString(R.string.error_downloading_require), Toast.LENGTH_LONG);
-			return;
-		}
-
-		if (!script.downloadResources()) {
-			Log.d(TAG, "Error downloading @resource'd data!");
-			makeToastOnUiThread(activity.getString(R.string.error_downloading_resource), Toast.LENGTH_LONG);
-			return;
-		}
-
 		scriptStore.add(script);
 		makeToastOnUiThread(activity.getString(R.string.added_new_script) + " "
 				+ script, Toast.LENGTH_LONG);

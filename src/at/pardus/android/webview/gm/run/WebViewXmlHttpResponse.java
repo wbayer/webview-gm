@@ -15,15 +15,15 @@
  */
 
 
-package at.pardus.android.webview.gm.model;
+package at.pardus.android.webview.gm.run;
 
 import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class XmlHttpResponse {
+public class WebViewXmlHttpResponse {
 
-	private static final String TAG = XmlHttpResponse.class.getName();
+	private static final String TAG = WebViewXmlHttpResponse.class.getName();
 
 	public static final int READY_STATE_UNSENT = 0;
 	public static final int READY_STATE_OPENED = 1;
@@ -47,7 +47,7 @@ public class XmlHttpResponse {
 
 	private JSONObject abort;
 
-	public XmlHttpResponse(JSONObject context) {
+	public WebViewXmlHttpResponse(JSONObject context) {
 		this.readyState = READY_STATE_UNSENT;
 		this.context = context;
 	}

@@ -15,7 +15,7 @@
  */
 
 
-package at.pardus.android.webview.gm.model;
+package at.pardus.android.webview.gm.run;
 
 import android.util.Base64;
 import android.util.Log;
@@ -40,9 +40,9 @@ import org.json.JSONObject;
 
 import at.pardus.android.webview.gm.util.UnicodeReader;
 
-public class XmlHttpRequest {
+public class WebViewXmlHttpRequest {
 
-	private static final String TAG = XmlHttpRequest.class.getName();
+	private static final String TAG = WebViewXmlHttpRequest.class.getName();
 
 	private boolean binary;
 	private JSONObject context;
@@ -64,7 +64,7 @@ public class XmlHttpRequest {
 	private String user;
 	private final WebView view;
 
-	public XmlHttpRequest(WebView view, String jsonRequestString) {
+	public WebViewXmlHttpRequest(WebView view, String jsonRequestString) {
 		// Register the view so that we can execute JS callbacks (e.g. onload)
 		this.view = view;
 
@@ -151,7 +151,7 @@ public class XmlHttpRequest {
 	 * Initiates a cross-domain HTTP Request to the address
 	 * specified by this object's "url" member.
 	 */
-	public XmlHttpResponse execute() {
+	public WebViewXmlHttpResponse execute() {
 		if (this.synchronous) {
 			return executeHttpRequestSync();
 		} else {
@@ -159,8 +159,8 @@ public class XmlHttpRequest {
 		}
 	}
 
-	private XmlHttpResponse executeHttpRequestAsync() {
-		XmlHttpResponse response = new XmlHttpResponse(this.context);
+	private WebViewXmlHttpResponse executeHttpRequestAsync() {
+		WebViewXmlHttpResponse response = new WebViewXmlHttpResponse(this.context);
 		Thread thread = new Thread() {
 			@Override
 			public void run() {
@@ -172,8 +172,8 @@ public class XmlHttpRequest {
 		return response;
 	}
 
-	private XmlHttpResponse executeHttpRequestSync() {
-		XmlHttpResponse response = new XmlHttpResponse(this.context);
+	private WebViewXmlHttpResponse executeHttpRequestSync() {
+		WebViewXmlHttpResponse response = new WebViewXmlHttpResponse(this.context);
 		StringBuilder out = new StringBuilder();
 		URL url;
 		int totalBytesRead = 0;
@@ -192,7 +192,7 @@ public class XmlHttpRequest {
 		try {
 			HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
 
-			response.setReadyState(XmlHttpResponse.READY_STATE_OPENED);
+			response.setReadyState(WebViewXmlHttpResponse.READY_STATE_OPENED);
 			executeOnReadyStateChangeCallback(response);
 
 			// Set connection properties for the GM_xmlhttpRequest
@@ -245,7 +245,7 @@ public class XmlHttpRequest {
 			// Adjust URL after "Location:" redirects, should be final now.
 			response.setFinalUrl(httpConn.getURL().toString());
 
-			response.setReadyState(XmlHttpResponse.READY_STATE_HEADERS_RECEIVED);
+			response.setReadyState(WebViewXmlHttpResponse.READY_STATE_HEADERS_RECEIVED);
 			executeOnReadyStateChangeCallback(response);
 
 			if (httpConn.getResponseCode() != HttpURLConnection.HTTP_OK) {
@@ -263,7 +263,7 @@ public class XmlHttpRequest {
 				response.setTotal(contentLength);
 			}
 
-			response.setReadyState(XmlHttpResponse.READY_STATE_LOADING);
+			response.setReadyState(WebViewXmlHttpResponse.READY_STATE_LOADING);
 			executeOnReadyStateChangeCallback(response);
 
 			// Begin receiving any response data/
@@ -293,7 +293,7 @@ public class XmlHttpRequest {
 
 			response.setResponseText(out.toString());
 
-			response.setReadyState(XmlHttpResponse.READY_STATE_DONE);
+			response.setReadyState(WebViewXmlHttpResponse.READY_STATE_DONE);
 			executeOnReadyStateChangeCallback(response);
 
 			executeOnLoadCallback(response);
@@ -322,7 +322,7 @@ public class XmlHttpRequest {
 		return response;
 	}
 
-	private void executeOnAbortCallback(XmlHttpResponse response) {
+	private void executeOnAbortCallback(WebViewXmlHttpResponse response) {
 		if (this.onAbort == null) {
 			return;
 		}
@@ -331,7 +331,7 @@ public class XmlHttpRequest {
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 
-	private void executeOnErrorCallback(XmlHttpResponse response) {
+	private void executeOnErrorCallback(WebViewXmlHttpResponse response) {
 		if (this.onError == null) {
 			return;
 		}
@@ -340,7 +340,7 @@ public class XmlHttpRequest {
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 
-	private void executeOnLoadCallback(XmlHttpResponse response) {
+	private void executeOnLoadCallback(WebViewXmlHttpResponse response) {
 		if (this.onLoad == null) {
 			return;
 		}
@@ -349,7 +349,7 @@ public class XmlHttpRequest {
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 
-	private void executeOnProgressCallback(XmlHttpResponse response) {
+	private void executeOnProgressCallback(WebViewXmlHttpResponse response) {
 		if (this.onProgress == null) {
 			return;
 		}
@@ -358,7 +358,7 @@ public class XmlHttpRequest {
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 
-	private void executeOnReadyStateChangeCallback(XmlHttpResponse response) {
+	private void executeOnReadyStateChangeCallback(WebViewXmlHttpResponse response) {
 		if (this.onReadyStateChange == null) {
 			return;
 		}
@@ -367,7 +367,7 @@ public class XmlHttpRequest {
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 
-	private void executeOnTimeoutCallback(XmlHttpResponse response) {
+	private void executeOnTimeoutCallback(WebViewXmlHttpResponse response) {
 		if (this.onTimeout == null) {
 			return;
 		}
@@ -376,7 +376,7 @@ public class XmlHttpRequest {
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 
-	private void executeUploadOnErrorCallback(XmlHttpResponse response) {
+	private void executeUploadOnErrorCallback(WebViewXmlHttpResponse response) {
 		if (this.upload == null) {
 			return;
 		}
@@ -385,7 +385,7 @@ public class XmlHttpRequest {
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 
-	private void executeUploadOnLoadCallback(XmlHttpResponse response) {
+	private void executeUploadOnLoadCallback(WebViewXmlHttpResponse response) {
 		if (this.upload == null) {
 			return;
 		}

@@ -21,8 +21,6 @@ import at.pardus.android.webview.gm.model.ScriptId;
 import at.pardus.android.webview.gm.store.ScriptStore;
 import at.pardus.android.webview.gm.model.Script;
 import at.pardus.android.webview.gm.model.ScriptResource;
-import at.pardus.android.webview.gm.model.XmlHttpRequest;
-import at.pardus.android.webview.gm.model.XmlHttpResponse;
 
 /**
  * Contains methods simulating GM functions that need access to the
@@ -273,8 +271,8 @@ public class WebViewGmApi {
 			return "";
 		}
 
-		XmlHttpRequest request = new XmlHttpRequest(this.view, jsonRequestString);
-		XmlHttpResponse response = request.execute();
+		WebViewXmlHttpRequest request = new WebViewXmlHttpRequest(this.view, jsonRequestString);
+		WebViewXmlHttpResponse response = request.execute();
 
 		if (response != null) {
 			return response.toJSONString();

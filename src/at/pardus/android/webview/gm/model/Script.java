@@ -136,16 +136,23 @@ public class Script extends ScriptMetadata {
 					} else if (propertyName.equals("version")) {
 						version = propertyValue;
 					} else if (propertyName.equals("require")) {
-						requires.add(new ScriptRequire(propertyValue, ""));
+						ScriptRequire require = downloadRequire(propertyValue);
+						if (require == null) {
+							return null;
+						}
+						requires.add(require);
 					} else if (propertyName.equals("resource")) {
 						Pattern resourcePattern = Pattern.compile("(\\S+)\\s+(.*)");
 						Matcher resourceMatcher = resourcePattern.matcher(propertyValue);
 						if (!resourceMatcher.matches()) {
 							return null;
 						}
-						String resourceName = resourceMatcher.group(1);
-						String resourceUrl = resourceMatcher.group(2);
-						resources.add(new ScriptResource(resourceName, resourceUrl, null));
+						ScriptResource resource = downloadResource(resourceMatcher.group(1),
+									resourceMatcher.group(2));
+						if (resource == null) {
+							return null;
+						}
+						resources.add(resource);
 					} else if (propertyName.equals("exclude")) {
 						exclude.add(propertyValue);
 					} else if (propertyName.equals("include")) {
@@ -189,60 +196,44 @@ public class Script extends ScriptMetadata {
 	}
 
 	/**
-	 * Downloads all @require'd scripts for the current script.
+	 * Downloads a @require'd script for the current script.
 	 *
+	 * @param requireUrl
+ 	 *		a @require URL indicating where to download a required script from.
 	 * @return a boolean value indicating whether the download operation was successful
 	 *         for all @require entries.
 	 * @see <tt><a href="http://wiki.greasespot.net/Metadata_Block">Metadata Block</a></tt>
 	 */
-	public boolean downloadRequires()
+	public static ScriptRequire downloadRequire(String requireUrl)
 	{
-		ScriptRequire[] requires = this.getRequires();
+		String requireContent = DownloadHelper.downloadScript(requireUrl);
 
-		// This script has no @require metadata directives.
-		if (requires == null) {
-			return true;
+		if (requireContent == null) {
+			return null;
 		}
 
-		for (ScriptRequire currentRequire: requires) {
-			String requireContent = DownloadHelper.downloadScript(currentRequire.getUrl());
-
-			if (requireContent == null) {
-				return false;
-			}
-
-			currentRequire.setContent(requireContent);
-		}
-
-		return true;
+		return new ScriptRequire(requireUrl, requireContent);
 	}
 
 	/**
-	 * Downloads all @resource'd files for the current script.
+	 * Downloads @resource'd file for the current script.
 	 *
+	 * @param resourceName
+	 * 		a @resource name, to identify the downloaded resource.
+	 * @param resourceUrl
+	 *		a @resource URL indicating where to download a resource from.
 	 * @return a boolean value indicating whether the download operation was successful
 	 *         for all @resource entries.
 	 * @see <tt><a href="http://wiki.greasespot.net/Metadata_Block">Metadata Block</a></tt>
 	 */
-	public boolean downloadResources()
+	public static ScriptResource downloadResource(String resourceName, String resourceUrl)
 	{
-		ScriptResource[] resources = this.getResources();
+		byte[] resourceData = DownloadHelper.downloadBytes(resourceUrl);
 
-		// This script has no @resource metadata directives.
-		if (resources == null) {
-			return true;
+		if (resourceData == null) {
+			return null;
 		}
 
-		for (ScriptResource currentResource: resources) {
-			byte[] resourceData = DownloadHelper.downloadBytes(currentResource.getUrl());
-
-			if (resourceData == null) {
-				return false;
-			}
-
-			currentResource.setData(resourceData);
-		}
-
-		return true;
+		return new ScriptResource(resourceName, resourceUrl, resourceData);
 	}
 }

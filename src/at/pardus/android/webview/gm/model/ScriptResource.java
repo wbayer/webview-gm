@@ -51,10 +51,6 @@ public class ScriptResource {
 		return this.data;
 	}
 
-	public void setData(byte[] newData) {
-		this.data = newData;
-	}
-
 	/**
 	 * Converts the "data" byte array into a base64 String.
 	 *
