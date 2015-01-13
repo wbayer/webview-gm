@@ -118,8 +118,8 @@ public class XmlHttpRequest {
 		}
 
 		Map<String,String> headers = new HashMap<String,String>();
-		for (Iterator<String> keyIterator = this.headers.keys(); keyIterator.hasNext();) {
-			String keyName = keyIterator.next();
+		for (Iterator<?> keyIterator = this.headers.keys(); keyIterator.hasNext();) {
+			String keyName = (String) keyIterator.next();
 
 			try {
 				headers.put(keyName, this.headers.getString(keyName));
@@ -129,6 +129,22 @@ public class XmlHttpRequest {
 		}
 
 		return headers;
+	}
+
+	public String getUploadOnError() {
+		if (this.upload == null) {
+			return "";
+		}
+
+		return this.upload.optString("onerror");
+	}
+
+	public String getUploadOnLoad() {
+		if (this.upload == null) {
+			return "";
+		}
+
+		return this.upload.optString("onload");
 	}
 
 	/**
@@ -162,6 +178,7 @@ public class XmlHttpRequest {
 		URL url;
 		int totalBytesRead = 0;
 		int contentLength;
+		boolean duringUpload = false;
 		byte[] outputData = this.getDataBytes();
 
 		try {
@@ -185,7 +202,9 @@ public class XmlHttpRequest {
 			}
 
 			if ((!this.user.equals("")) && (!this.password.equals(""))) {
-				httpConn.setRequestProperty("Authorization", "Basic " + Base64.encodeToString((this.user + ":" + this.password).getBytes("UTF-8"), Base64.DEFAULT));
+				httpConn.setRequestProperty("Authorization", "Basic "
+						+ Base64.encodeToString((this.user + ":"
+						+ this.password).getBytes("UTF-8"), Base64.DEFAULT));
 			}
 
 			httpConn.setRequestMethod(this.method);
@@ -212,9 +231,12 @@ public class XmlHttpRequest {
 
 			// Begin transmitting data if requested.
 			if (outputData != null) {
+				duringUpload = true;
 				OutputStream outputStream = httpConn.getOutputStream();
 				outputStream.write(outputData);
 				outputStream.close();
+				executeUploadOnLoadCallback(response);
+				duringUpload = false;
 			}
 
 			response.setStatus(httpConn.getResponseCode());
@@ -289,7 +311,12 @@ public class XmlHttpRequest {
 		} catch (IOException e) {
 			Log.e(TAG, "Exception issuing GM_xmlhttpRequest for: "
 					+ this.url + ": " + e.getMessage());
-			executeOnErrorCallback(response);
+
+			if (duringUpload) {
+				executeUploadOnErrorCallback(response);
+			} else {
+				executeOnErrorCallback(response);
+			}
 		}
 
 		return response;
@@ -346,6 +373,24 @@ public class XmlHttpRequest {
 		}
 
 		view.loadUrl("javascript: (function() { unsafeWindow. " + this.onTimeout
+				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
+	}
+
+	private void executeUploadOnErrorCallback(XmlHttpResponse response) {
+		if (this.upload == null) {
+			return;
+		}
+
+		view.loadUrl("javascript: (function() { unsafeWindow. " + getUploadOnError()
+				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
+	}
+
+	private void executeUploadOnLoadCallback(XmlHttpResponse response) {
+		if (this.upload == null) {
+			return;
+		}
+
+		view.loadUrl("javascript: (function() { unsafeWindow. " + getUploadOnLoad()
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 }

@@ -16,13 +16,6 @@
 
 package at.pardus.android.webview.gm.store.ui;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -40,7 +33,6 @@ import at.pardus.android.webview.gm.model.Script;
 import at.pardus.android.webview.gm.run.WebViewClientGm;
 import at.pardus.android.webview.gm.run.WebViewGm;
 import at.pardus.android.webview.gm.store.ScriptStore;
-import at.pardus.android.webview.gm.util.UnicodeReader;
 import at.pardus.android.webview.gm.util.DownloadHelper;
 import at.pardus.webview.gm.R;
 

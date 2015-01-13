@@ -116,7 +116,7 @@ public class WebViewClientGm extends WebViewClient {
 						+ script.getName().replace("\"", "\\\"") + "\", \""
 						+ script.getNamespace().replace("\"", "\\\"")
 						+ "\", \"" + secret + "\"";
-				String signatureName = defaultSignature.replaceAll("[^0-9a-zA-Z_]", "");
+				String callbackPrefix = defaultSignature.replaceAll("[^0-9a-zA-Z_]", "");
 				String jsApi = JSUNSAFEWINDOW;
 				jsApi += "var GM_listValues = function() { return "
 						+ jsBridgeName + ".listValues(" + defaultSignature
@@ -145,24 +145,38 @@ public class WebViewClientGm extends WebViewClient {
 						+ jsBridgeName + ".getResourceText(" + defaultSignature
 						+ ", resourceName); };\n";
 				jsApi += "var GM_xmlhttpRequest = function(details) { \n"
-						+ "if (details.onabort) { unsafeWindow." + signatureName
+						+ "if (details.onabort) { unsafeWindow." + callbackPrefix
 						+ "GM_onAbortCallback = details.onabort;\n"
-						+ "details.onabort = '" + signatureName + "GM_onAbortCallback'; }\n"
-						+ "if (details.onerror) { unsafeWindow." + signatureName
+						+ "details.onabort = '" + callbackPrefix + "GM_onAbortCallback'; }\n"
+						+ "if (details.onerror) { unsafeWindow." + callbackPrefix
 						+ "GM_onErrorCallback = details.onerror;\n"
-						+ "details.onerror = '" + signatureName + "GM_onErrorCallback'; }\n"
-						+ "if (details.onload) { unsafeWindow." + signatureName
+						+ "details.onerror = '" + callbackPrefix + "GM_onErrorCallback'; }\n"
+						+ "if (details.onload) { unsafeWindow." + callbackPrefix
 						+ "GM_onLoadCallback = details.onload;\n"
-						+ "details.onload = '" + signatureName + "GM_onLoadCallback'; }\n"
-						+ "if (details.onprogress) { unsafeWindow." + signatureName
+						+ "details.onload = '" + callbackPrefix + "GM_onLoadCallback'; }\n"
+						+ "if (details.onprogress) { unsafeWindow." + callbackPrefix
 						+ "GM_onProgressCallback = details.onprogress;\n"
-						+ "details.onprogress = '" + signatureName + "GM_onProgressCallback'; }\n"
-						+ "if (details.onreadystatechange) { unsafeWindow." + signatureName
+						+ "details.onprogress = '" + callbackPrefix + "GM_onProgressCallback'; }\n"
+						+ "if (details.onreadystatechange) { unsafeWindow." + callbackPrefix
 						+ "GM_onReadyStateChange = details.onreadystatechange;\n"
-						+ "details.onreadystatechange = '" + signatureName + "GM_onReadyStateChange'; }\n"
-						+ "if (details.ontimeout) { unsafeWindow." + signatureName
+						+ "details.onreadystatechange = '" + callbackPrefix + "GM_onReadyStateChange'; }\n"
+						+ "if (details.ontimeout) { unsafeWindow." + callbackPrefix
 						+ "GM_onTimeoutCallback = details.ontimeout;\n"
-						+ "details.ontimeout = '" + signatureName + "GM_onTimeoutCallback'; }\n"
+						+ "details.ontimeout = '" + callbackPrefix + "GM_onTimeoutCallback'; }\n"
+						+ "if (details.upload) {\n"
+						+ "if (details.upload.onabort) { unsafeWindow." + callbackPrefix
+						+ "GM_uploadOnAbortCallback = details.upload.onabort;\n"
+						+ "details.upload.onabort = '" + callbackPrefix + "GM_uploadOnAbortCallback'; }\n"
+						+ "if (details.upload.onerror) { unsafeWindow." + callbackPrefix
+						+ "GM_uploadOnErrorCallback = details.upload.onerror;\n"
+						+ "details.upload.onerror = '" + callbackPrefix + "GM_uploadOnErrorCallback'; }\n"
+						+ "if (details.upload.onload) { unsafeWindow." + callbackPrefix
+						+ "GM_uploadOnLoadCallback = details.upload.onload;\n"
+						+ "details.upload.onload = '" + callbackPrefix + "GM_uploadOnLoadCallback'; }\n"
+						+ "if (details.upload.onprogress) { unsafeWindow." + callbackPrefix
+						+ "GM_uploadOnProgressCallback = details.upload.onprogress;\n"
+						+ "details.upload.onprogress = '" + callbackPrefix + "GM_uploadOnProgressCallback'; }\n"
+						+ "}\n"
 						+ "return JSON.parse(" + jsBridgeName + ".xmlHttpRequest(" + defaultSignature
 						+ ", JSON.stringify(details))); };\n";
 				// TODO implement missing functions
@@ -172,7 +186,7 @@ public class WebViewClientGm extends WebViewClient {
 				String jsAllRequires = "";
 				ScriptRequire[] requires = script.getRequires();
 				if (requires != null) {
-					for (ScriptRequire currentRequire : requires) {
+					for (ScriptRequire currentRequire: requires) {
 						jsAllRequires += (currentRequire.getContent() + "\n");
 					}
 				}
