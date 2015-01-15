@@ -21,8 +21,6 @@
     <string name="error_while_loading">Fehler beim Laden</string>
     <string name="starting_download_of">Download wird gestartet von</string>
     <string name="error_downloading_from">Fehler beim Download von</string>
-    <string name="error_downloading_require">Fehler beim Download von @require\'d Skript</string>
-    <string name="error_downloading_resource">Fehler beim Download von @resource\'d Datei</string>
     <string name="error_parsing_at">Fehler beim Analysieren des Skripts auf</string>
 
 </resources>

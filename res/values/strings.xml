@@ -21,8 +21,6 @@
     <string name="error_while_loading">Error while loading</string>
     <string name="starting_download_of">Starting download of</string>
     <string name="error_downloading_from">Error downloading script from</string>
-    <string name="error_downloading_require">Error downloading @require\'d script</string>
-    <string name="error_downloading_resource">Error downloading @resource\'d data</string>
     <string name="error_parsing_at">Error parsing script at</string>
 
 </resources>
