@@ -45,8 +45,6 @@ public class WebViewXmlHttpResponse {
 	private long loaded; // Should be unsigned long long
 	private long total; // Should also be unsigned long long.
 
-	private JSONObject abort;
-
 	public WebViewXmlHttpResponse(JSONObject context) {
 		this.readyState = READY_STATE_UNSENT;
 		this.context = context;
@@ -89,6 +87,10 @@ public class WebViewXmlHttpResponse {
 
 	public void setReadyState(int newReadyState) {
 		this.readyState = newReadyState;
+	}
+
+	public void setResponseHeaders(String newResponseHeaders) {
+		this.responseHeaders = newResponseHeaders;
 	}
 
 	public void setResponseText(String newResponseText) {

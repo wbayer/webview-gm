@@ -20,6 +20,9 @@ import android.graphics.Bitmap;
 import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import java.util.UUID;
+
 import at.pardus.android.webview.gm.model.Script;
 import at.pardus.android.webview.gm.store.ScriptStore;
 import at.pardus.android.webview.gm.model.ScriptRequire;
@@ -116,7 +119,8 @@ public class WebViewClientGm extends WebViewClient {
 						+ script.getName().replace("\"", "\\\"") + "\", \""
 						+ script.getNamespace().replace("\"", "\\\"")
 						+ "\", \"" + secret + "\"";
-				String callbackPrefix = defaultSignature.replaceAll("[^0-9a-zA-Z_]", "");
+				String callbackPrefix = (script.getName() + script.getNamespace()
+						+ UUID.randomUUID().toString()).replaceAll("[^0-9a-zA-Z_]", "");
 				String jsApi = JSUNSAFEWINDOW;
 				jsApi += "var GM_listValues = function() { return "
 						+ jsBridgeName + ".listValues(" + defaultSignature

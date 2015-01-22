@@ -32,7 +32,9 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONException;
@@ -44,12 +46,10 @@ public class WebViewXmlHttpRequest {
 
 	private static final String TAG = WebViewXmlHttpRequest.class.getName();
 
-	private boolean binary;
 	private JSONObject context;
 	private String data;
 	private JSONObject headers;
 	private String method;
-	private String onAbort;
 	private String onError;
 	private String onLoad;
 	private String onProgress;
@@ -81,11 +81,9 @@ public class WebViewXmlHttpRequest {
 		}
 
 		// Get optional object members.
-		this.binary = jsonObject.optBoolean("binary");
 		this.context = jsonObject.optJSONObject("context");
 		this.data = jsonObject.optString("data");
 		this.headers = jsonObject.optJSONObject("headers");
-		this.onAbort = jsonObject.optString("onabort");
 		this.onError = jsonObject.optString("onerror");
 		this.onLoad = jsonObject.optString("onload");
 		this.onProgress = jsonObject.optString("onprogress");
@@ -255,6 +253,15 @@ public class WebViewXmlHttpRequest {
 				return response;
 			}
 
+			// Save all the response headers to the response object.
+			String allHeaders = "";
+			Set<Map.Entry<String, List<String>>> responseHeaderSet = httpConn.getHeaderFields().entrySet();
+			for (Map.Entry kvp: responseHeaderSet) {
+				allHeaders += kvp.getKey() + ": " + kvp.getValue() + "\n";
+			}
+
+			response.setResponseHeaders(allHeaders);
+
 			// Setup progress parameters if applicable.
 			contentLength = httpConn.getContentLength();
 
@@ -288,7 +295,7 @@ public class WebViewXmlHttpRequest {
 			}
 
 			// Clean up open resources & report completion.
-			inputStream.close();
+			in.close();
 			httpConn.disconnect();
 
 			response.setResponseText(out.toString());
@@ -322,75 +329,74 @@ public class WebViewXmlHttpRequest {
 		return response;
 	}
 
-	private void executeOnAbortCallback(WebViewXmlHttpResponse response) {
-		if (this.onAbort == null) {
-			return;
-		}
-
-		view.loadUrl("javascript: (function() { unsafeWindow. " + this.onAbort
-				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
+	private void loadUrlOnUiThread(final String jsUrl) {
+		view.post( new Runnable() {
+			public void run() {
+				view.loadUrl(jsUrl);
+			}
+		} );
 	}
 
 	private void executeOnErrorCallback(WebViewXmlHttpResponse response) {
-		if (this.onError == null) {
+		if (this.onError.equals("")) {
 			return;
 		}
 
-		view.loadUrl("javascript: (function() { unsafeWindow. " + this.onError
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + this.onError
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 
 	private void executeOnLoadCallback(WebViewXmlHttpResponse response) {
-		if (this.onLoad == null) {
+		if (this.onLoad.equals("")) {
 			return;
 		}
 
-		view.loadUrl("javascript: (function() { unsafeWindow. " + this.onLoad
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + this.onLoad
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 
 	private void executeOnProgressCallback(WebViewXmlHttpResponse response) {
-		if (this.onProgress == null) {
+		if (this.onProgress.equals("")) {
 			return;
 		}
 
-		view.loadUrl("javascript: (function() { unsafeWindow. " + this.onProgress
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + this.onProgress
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 
 	private void executeOnReadyStateChangeCallback(WebViewXmlHttpResponse response) {
-		if (this.onReadyStateChange == null) {
+		if (this.onReadyStateChange.equals("")) {
 			return;
 		}
 
-		view.loadUrl("javascript: (function() { unsafeWindow. " + this.onReadyStateChange
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + this.onReadyStateChange
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 
 	private void executeOnTimeoutCallback(WebViewXmlHttpResponse response) {
-		if (this.onTimeout == null) {
+		if (this.onTimeout.equals("")) {
 			return;
 		}
 
-		view.loadUrl("javascript: (function() { unsafeWindow. " + this.onTimeout
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + this.onTimeout
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 
 	private void executeUploadOnErrorCallback(WebViewXmlHttpResponse response) {
-		if (this.upload == null) {
+		if (this.upload.equals("")) {
 			return;
 		}
 
-		view.loadUrl("javascript: (function() { unsafeWindow. " + getUploadOnError()
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + getUploadOnError()
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 
 	private void executeUploadOnLoadCallback(WebViewXmlHttpResponse response) {
-		if (this.upload == null) {
+		if (this.upload.equals("")) {
 			return;
 		}
 
-		view.loadUrl("javascript: (function() { unsafeWindow. " + getUploadOnLoad()
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + getUploadOnLoad()
 				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
 	}
 }
