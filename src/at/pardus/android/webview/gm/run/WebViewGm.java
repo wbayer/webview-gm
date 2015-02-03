@@ -116,7 +116,7 @@ public class WebViewGm extends WebView {
 	public void setScriptStore(ScriptStore scriptStore) {
 		this.scriptStore = scriptStore;
 		addJavascriptInterface(
-				new WebViewGmApi(scriptStore, webViewClient.getSecret()),
+				new WebViewGmApi(this, scriptStore, webViewClient.getSecret()),
 				JSBRIDGENAME);
 		webViewClient.setScriptStore(scriptStore);
 	}

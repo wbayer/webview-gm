@@ -27,15 +27,18 @@ ToDo
 ----
 
 Missing GM functions:
-GM_xmlhttpRequest, GM_getResourceText, GM_getResourceURL,
 GM_registerMenuCommand, GM_openInTab, GM_info
 See http://wiki.greasespot.net/Greasemonkey_Manual:API
 
 Missing metablock header interpretation/implementation:
-@require, @resource
+@noframes, @grant
 See http://wiki.greasespot.net/Metadata_Block
 
 Improvement of the user interface.
+
+Limitations
+-----------
+GM_xmlhttpRequest implementation is missing an "abort()" callback.
 
 Contributing
 ------------

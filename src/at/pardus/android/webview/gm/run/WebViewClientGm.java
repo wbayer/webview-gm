@@ -20,8 +20,12 @@ import android.graphics.Bitmap;
 import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import java.util.UUID;
+
 import at.pardus.android.webview.gm.model.Script;
 import at.pardus.android.webview.gm.store.ScriptStore;
+import at.pardus.android.webview.gm.model.ScriptRequire;
 
 /**
  * A user script enabled WebViewClient to be used by WebViewGm.
@@ -38,12 +42,10 @@ public class WebViewClientGm extends WebViewClient {
 
 	private static final String JSMISSINGFUNCTION = "function() { GM_log(\"Called function not yet implemented\"); };\n";
 
-	private static final String JSMISSINGFUNCTIONS = "var GM_xmlhttpRequest = "
-			+ JSMISSINGFUNCTION + "var GM_info = " + JSMISSINGFUNCTION
-			+ "var GM_getResourceText = " + JSMISSINGFUNCTION
-			+ "var GM_getResourceURL = " + JSMISSINGFUNCTION
-			+ "var GM_openInTab = " + JSMISSINGFUNCTION
-			+ "var GM_registerMenuCommand = " + JSMISSINGFUNCTION;
+	private static final String JSMISSINGFUNCTIONS = "var GM_info = "
+			+ JSMISSINGFUNCTION + "var GM_openInTab = "
+			+ JSMISSINGFUNCTION + "var GM_registerMenuCommand = "
+			+ JSMISSINGFUNCTION;
 
 	private ScriptStore scriptStore;
 
@@ -117,6 +119,8 @@ public class WebViewClientGm extends WebViewClient {
 						+ script.getName().replace("\"", "\\\"") + "\", \""
 						+ script.getNamespace().replace("\"", "\\\"")
 						+ "\", \"" + secret + "\"";
+				String callbackPrefix = (script.getName() + script.getNamespace()
+						+ UUID.randomUUID().toString()).replaceAll("[^0-9a-zA-Z_]", "");
 				String jsApi = JSUNSAFEWINDOW;
 				jsApi += "var GM_listValues = function() { return "
 						+ jsBridgeName + ".listValues(" + defaultSignature
@@ -138,14 +142,66 @@ public class WebViewClientGm extends WebViewClient {
 						+ "document.getElementsByTagName('head')[0].appendChild(style); };\n";
 				jsApi += "var GM_log = function(message) { " + jsBridgeName
 						+ ".log(" + defaultSignature + ", message); };\n";
+				jsApi += "var GM_getResourceURL = function(resourceName) { return "
+						+ jsBridgeName + ".getResourceURL(" + defaultSignature
+						+ ", resourceName); };\n";
+				jsApi += "var GM_getResourceText = function(resourceName) { return "
+						+ jsBridgeName + ".getResourceText(" + defaultSignature
+						+ ", resourceName); };\n";
+				jsApi += "var GM_xmlhttpRequest = function(details) { \n"
+						+ "if (details.onabort) { unsafeWindow." + callbackPrefix
+						+ "GM_onAbortCallback = details.onabort;\n"
+						+ "details.onabort = '" + callbackPrefix + "GM_onAbortCallback'; }\n"
+						+ "if (details.onerror) { unsafeWindow." + callbackPrefix
+						+ "GM_onErrorCallback = details.onerror;\n"
+						+ "details.onerror = '" + callbackPrefix + "GM_onErrorCallback'; }\n"
+						+ "if (details.onload) { unsafeWindow." + callbackPrefix
+						+ "GM_onLoadCallback = details.onload;\n"
+						+ "details.onload = '" + callbackPrefix + "GM_onLoadCallback'; }\n"
+						+ "if (details.onprogress) { unsafeWindow." + callbackPrefix
+						+ "GM_onProgressCallback = details.onprogress;\n"
+						+ "details.onprogress = '" + callbackPrefix + "GM_onProgressCallback'; }\n"
+						+ "if (details.onreadystatechange) { unsafeWindow." + callbackPrefix
+						+ "GM_onReadyStateChange = details.onreadystatechange;\n"
+						+ "details.onreadystatechange = '" + callbackPrefix + "GM_onReadyStateChange'; }\n"
+						+ "if (details.ontimeout) { unsafeWindow." + callbackPrefix
+						+ "GM_onTimeoutCallback = details.ontimeout;\n"
+						+ "details.ontimeout = '" + callbackPrefix + "GM_onTimeoutCallback'; }\n"
+						+ "if (details.upload) {\n"
+						+ "if (details.upload.onabort) { unsafeWindow." + callbackPrefix
+						+ "GM_uploadOnAbortCallback = details.upload.onabort;\n"
+						+ "details.upload.onabort = '" + callbackPrefix + "GM_uploadOnAbortCallback'; }\n"
+						+ "if (details.upload.onerror) { unsafeWindow." + callbackPrefix
+						+ "GM_uploadOnErrorCallback = details.upload.onerror;\n"
+						+ "details.upload.onerror = '" + callbackPrefix + "GM_uploadOnErrorCallback'; }\n"
+						+ "if (details.upload.onload) { unsafeWindow." + callbackPrefix
+						+ "GM_uploadOnLoadCallback = details.upload.onload;\n"
+						+ "details.upload.onload = '" + callbackPrefix + "GM_uploadOnLoadCallback'; }\n"
+						+ "if (details.upload.onprogress) { unsafeWindow." + callbackPrefix
+						+ "GM_uploadOnProgressCallback = details.upload.onprogress;\n"
+						+ "details.upload.onprogress = '" + callbackPrefix + "GM_uploadOnProgressCallback'; }\n"
+						+ "}\n"
+						+ "return JSON.parse(" + jsBridgeName + ".xmlHttpRequest(" + defaultSignature
+						+ ", JSON.stringify(details))); };\n";
 				// TODO implement missing functions
 				jsApi += JSMISSINGFUNCTIONS;
+
+				// Get @require'd scripts to inject for this script.
+				String jsAllRequires = "";
+				ScriptRequire[] requires = script.getRequires();
+				if (requires != null) {
+					for (ScriptRequire currentRequire: requires) {
+						jsAllRequires += (currentRequire.getContent() + "\n");
+					}
+				}
+
 				if (script.isUnwrap()) {
-					view.loadUrl("javascript:\n" + jsApi + jsBeforeScript
+					view.loadUrl("javascript:\n" + jsApi
+							+ jsAllRequires + jsBeforeScript
 							+ script.getContent() + jsAfterScript);
 				} else {
 					view.loadUrl("javascript:\n" + JSCONTAINERSTART + jsApi
-							+ jsBeforeScript + script.getContent()
+							+ jsAllRequires + jsBeforeScript + script.getContent()
 							+ jsAfterScript + JSCONTAINEREND);
 				}
 			}

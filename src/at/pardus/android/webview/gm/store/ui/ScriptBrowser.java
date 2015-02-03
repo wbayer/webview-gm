@@ -16,13 +16,6 @@
 
 package at.pardus.android.webview.gm.store.ui;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -40,7 +33,7 @@ import at.pardus.android.webview.gm.model.Script;
 import at.pardus.android.webview.gm.run.WebViewClientGm;
 import at.pardus.android.webview.gm.run.WebViewGm;
 import at.pardus.android.webview.gm.store.ScriptStore;
-import at.pardus.android.webview.gm.util.UnicodeReader;
+import at.pardus.android.webview.gm.util.DownloadHelper;
 import at.pardus.webview.gm.R;
 
 /**
@@ -74,7 +67,7 @@ public class ScriptBrowser {
 	protected void installScript(String url) {
 		makeToastOnUiThread(activity.getString(R.string.starting_download_of)
 				+ " " + url, Toast.LENGTH_SHORT);
-		String scriptStr = downloadScript(url);
+		String scriptStr = DownloadHelper.downloadScript(url);
 		if (scriptStr == null) {
 			makeToastOnUiThread(
 					activity.getString(R.string.error_downloading_from) + " "
@@ -88,75 +81,10 @@ public class ScriptBrowser {
 					+ " " + url, Toast.LENGTH_LONG);
 			return;
 		}
+
 		scriptStore.add(script);
 		makeToastOnUiThread(activity.getString(R.string.added_new_script) + " "
 				+ script, Toast.LENGTH_LONG);
-	}
-
-	/**
-	 * Downloads and returns a file as String.
-	 * 
-	 * Not to be run on the UI thread.
-	 * 
-	 * @param url
-	 *            the http address to get
-	 * @return the downloaded file as String or null on any error
-	 */
-	protected String downloadScript(String url) {
-		StringBuilder out = new StringBuilder();
-		Reader in = null;
-		HttpURLConnection con = null;
-		char[] buffer = new char[4096];
-		try {
-			URL u = new URL(url);
-			con = (HttpURLConnection) u.openConnection();
-			con.setReadTimeout(5000);
-			con.setRequestMethod("GET");
-			con.setUseCaches(false);
-			con.connect();
-			InputStream is = con.getInputStream();
-			in = new UnicodeReader(is, con.getContentEncoding());
-			int bytesRead = 0;
-			while ((bytesRead = in.read(buffer, 0, 4096)) != -1) {
-				if (bytesRead > 0) {
-					out.append(buffer, 0, bytesRead);
-				}
-			}
-		} catch (MalformedURLException e) {
-			Log.e(TAG, Log.getStackTraceString(e));
-			return null;
-		} catch (IOException e) {
-			Log.e(TAG, Log.getStackTraceString(e));
-			try {
-				InputStream errorStream = con.getErrorStream();
-				if (errorStream != null) {
-					in = new UnicodeReader(errorStream, null);
-					int bytesRead = 0;
-					StringBuilder errorStr = new StringBuilder();
-					while ((bytesRead = in.read(buffer, 0, 4096)) != -1) {
-						if (bytesRead > 0) {
-							errorStr.append(buffer, 0, bytesRead);
-						}
-					}
-					in.close();
-					Log.e(TAG, errorStr.toString());
-				}
-			} catch (Exception e1) {
-			}
-			return null;
-		} catch (Exception e) {
-			Log.e(TAG, Log.getStackTraceString(e));
-			return null;
-		} finally {
-			try {
-				in.close();
-			} catch (Exception e) {
-			}
-			if (con != null) {
-				con.disconnect();
-			}
-		}
-		return out.toString();
 	}
 
 	/**

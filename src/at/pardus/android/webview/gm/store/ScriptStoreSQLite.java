@@ -31,6 +31,8 @@ import android.util.Log;
 import at.pardus.android.webview.gm.model.Script;
 import at.pardus.android.webview.gm.model.ScriptCriteria;
 import at.pardus.android.webview.gm.model.ScriptId;
+import at.pardus.android.webview.gm.model.ScriptRequire;
+import at.pardus.android.webview.gm.model.ScriptResource;
 
 /**
  * Implements a ScriptStore using an SQLite database to persist user scripts and
@@ -214,7 +216,9 @@ public class ScriptStoreSQLite implements ScriptStore {
 	 */
 	private static class ScriptDbHelper extends SQLiteOpenHelper {
 
-		private static final int DB_VERSION = 1;
+		private static final int DB_SCHEMA_VERSION_1 = 1; // Base schema version, from initial release.
+		private static final int DB_SCHEMA_VERSION_2 = 2; // Add support for @require and @resource metadata directive.
+		private static final int DB_VERSION = DB_SCHEMA_VERSION_2;
 
 		private static final String DB = "webviewgm";
 
@@ -231,6 +235,8 @@ public class ScriptStoreSQLite implements ScriptStore {
 		private static final String COL_VERSION = "version";
 		private static final String COL_CONTENT = "content";
 		private static final String COL_ENABLED = "enabled";
+		private static final String COL_DATA = "data";
+		private static final String COL_RESOURCENAME = "resource_name";
 		private static final String TBL_SCRIPT_CREATE = "CREATE TABLE "
 				+ TBL_SCRIPT + " (" + COL_NAME + " TEXT NOT NULL" + ", "
 				+ COL_NAMESPACE + " TEXT NOT NULL" + ", " + COL_DESCRIPTION
@@ -274,7 +280,26 @@ public class ScriptStoreSQLite implements ScriptStore {
 				+ TBL_SCRIPT + " (" + COL_NAME + ", " + COL_NAMESPACE
 				+ ") ON UPDATE CASCADE ON DELETE CASCADE);";
 
-		// TODO add require and resource tables
+		private static final String TBL_REQUIRE = TBL_SCRIPT + "_has_require";
+		private static final String TBL_REQUIRE_CREATE = "CREATE TABLE IF NOT EXISTS "
+				+ TBL_REQUIRE + " (" + COL_NAME + " TEXT NOT NULL" + ", "
+				+ COL_NAMESPACE + " TEXT NOT NULL, " + COL_DOWNLOADURL
+				+ " TEXT NOT NULL, " + COL_CONTENT + " TEXT NOT NULL, PRIMARY KEY ("
+				+ COL_NAME + ", " + COL_NAMESPACE + ", " + COL_DOWNLOADURL
+				+ "), FOREIGN KEY (" + COL_NAME + ", " + COL_NAMESPACE + ") REFERENCES "
+				+ TBL_SCRIPT + " (" + COL_NAME + ", " + COL_NAMESPACE
+				+ ") ON UPDATE CASCADE ON DELETE CASCADE);";
+
+		private static final String TBL_RESOURCE = TBL_SCRIPT + "_has_resource";
+		private static final String TBL_RESOURCE_CREATE = "CREATE TABLE IF NOT EXISTS "
+				+ TBL_RESOURCE + " (" + COL_NAME + " TEXT NOT NULL, "
+				+ COL_NAMESPACE + " TEXT NOT NULL, " +  COL_RESOURCENAME
+				+ " TEXT NOT NULL, " + COL_DOWNLOADURL + " TEXT NOT NULL, "
+				+ COL_DATA + " BLOB NOT NULL, PRIMARY KEY (" + COL_NAME + ", "
+				+ COL_NAMESPACE + ", " + COL_RESOURCENAME + "), FOREIGN KEY ("
+				+ COL_NAME + ", " + COL_NAMESPACE + ") REFERENCES "
+				+ TBL_SCRIPT + " (" + COL_NAME + ", " + COL_NAMESPACE
+				+ ") ON UPDATE CASCADE ON DELETE CASCADE);";
 
 		private static final String TBL_VALUE = TBL_SCRIPT + "_has_value";
 		private static final String COL_VALUENAME = "valuename";
@@ -293,6 +318,10 @@ public class ScriptStoreSQLite implements ScriptStore {
 				COL_NAMESPACE };
 		private static final String[] COLS_PATTERN = new String[] { COL_NAME,
 				COL_NAMESPACE, COL_PATTERN };
+		private static final String[] COLS_REQUIRE = new String[] { COL_NAME,
+				COL_NAMESPACE, COL_DOWNLOADURL, COL_CONTENT };
+		private static final String[] COLS_RESOURCE = new String[] { COL_NAME,
+				COL_NAMESPACE, COL_DOWNLOADURL, COL_RESOURCENAME, COL_DATA };
 		private static final String[] COLS_SCRIPT = new String[] { COL_NAME,
 				COL_NAMESPACE, COL_DESCRIPTION, COL_DOWNLOADURL, COL_UPDATEURL,
 				COL_INSTALLURL, COL_ICON, COL_RUNAT, COL_UNWRAP, COL_VERSION,
@@ -313,12 +342,22 @@ public class ScriptStoreSQLite implements ScriptStore {
 			db.execSQL(TBL_INCLUDE_CREATE);
 			db.execSQL(TBL_MATCH_CREATE);
 			db.execSQL(TBL_VALUE_CREATE);
+			db.execSQL(TBL_REQUIRE_CREATE);
+			db.execSQL(TBL_RESOURCE_CREATE);
 		}
 
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 			Log.i(TAG, "Upgrading database " + DB + " from version "
 					+ oldVersion + " to " + newVersion);
+
+			if (newVersion >= DB_SCHEMA_VERSION_2) {
+				db.execSQL(TBL_REQUIRE_CREATE);
+				db.execSQL(TBL_RESOURCE_CREATE);
+			} else {
+				Log.e(TAG, "Unexpected database upgrade from version"
+					+ oldVersion + " to " + newVersion + ". No known upgrade path");
+			}
 		}
 
 		/**
@@ -366,6 +405,10 @@ public class ScriptStoreSQLite implements ScriptStore {
 					selectionIdStr, selectionIdArgsArr);
 			Map<ScriptId, List<String>> matches = selectPatterns(TBL_MATCH,
 					selectionIdStr, selectionIdArgsArr);
+			Map<ScriptId, List<ScriptRequire>> requires = selectRequires(TBL_REQUIRE,
+					selectionIdStr, selectionIdArgsArr);
+			Map<ScriptId, List<ScriptResource>> resources = selectResources(TBL_RESOURCE,
+					selectionIdStr, selectionIdArgsArr);
 			Cursor cursor = db.query(TBL_SCRIPT, COLS_SCRIPT, selectionStr,
 					selectionArgsArr, null, null, null);
 			Script[] scriptsArr = new Script[cursor.getCount()];
@@ -391,12 +434,17 @@ public class ScriptStoreSQLite implements ScriptStore {
 				String runat = cursor.getString(7);
 				int unwrap = cursor.getInt(8);
 				String version = cursor.getString(9);
+				List<ScriptRequire> require = requires.get(id);
+				ScriptRequire[] requireArr = (require == null) ? null : require
+						.toArray(new ScriptRequire[require.size()]);
+				List<ScriptResource> resource = resources.get(id);
+				ScriptResource[] resourceArr = (resource == null) ? null : resource
+						.toArray(new ScriptResource[resource.size()]);
 				String content = cursor.getString(10);
-				// TODO add require and resource data
 				scriptsArr[i] = new Script(name, namespace, excludeArr,
 						includeArr, matchArr, description, downloadurl,
 						updateurl, installurl, icon, runat, unwrap == 1,
-						version, content);
+						version, requireArr, resourceArr, content);
 				i++;
 			}
 			cursor.close();
@@ -507,6 +555,75 @@ public class ScriptStoreSQLite implements ScriptStore {
 		}
 
 		/**
+		 * Retrieves require content from the database.
+		 *
+		 * @param tblName
+		 *             the name of the table to query
+		 * @param selection
+		 *             the selection string (WHERE part of the query with
+		 *             arguments replaced by ?)
+		 * @param selectionArgs
+		 *             the arguments to use in the selection string
+		 * @return matching requires found in the table mapped to script IDs; an
+		 *         empty map if none found
+		 */
+		private Map<ScriptId, List<ScriptRequire>> selectRequires(String tblName,
+				String selection, String[] selectionArgs) {
+			Map<ScriptId, List<ScriptRequire>> contents = new HashMap<ScriptId, List<ScriptRequire>>();
+			Cursor cursor = db.query(tblName, COLS_REQUIRE, selection,
+					selectionArgs, null, null, null);
+			while (cursor.moveToNext()) {
+				ScriptId id = new ScriptId(cursor.getString(cursor.getColumnIndex(COL_NAME)),
+						cursor.getString(cursor.getColumnIndex(COL_NAMESPACE)));
+				List<ScriptRequire> content = contents.get(id);
+				if (content == null) {
+					content = new ArrayList<ScriptRequire>();
+					contents.put(id, content);
+				}
+				String requireUrl = cursor.getString(cursor.getColumnIndex(COL_DOWNLOADURL));
+				String requireContent = cursor.getString(cursor.getColumnIndex(COL_CONTENT));
+				content.add(new ScriptRequire(requireUrl, requireContent));
+			}
+			cursor.close();
+			return contents;
+		}
+
+		/**
+		 * Retrieves resource content from the database.
+		 *
+		 * @param tblName
+		 *           the name of the table to query
+		 * @param selection
+		 *           the selection string (WHERE part of the query with
+		 *           arguments replaced by ?)
+		 * @param selectionArgs
+		 *           the arguments to use in the selection string
+		 * @return matching resources found in the table mapped to script IDs;
+		 *         an empty map if none found
+		 */
+		private Map<ScriptId, List<ScriptResource>> selectResources(String tblName,
+				String selection, String[] selectionArgs) {
+			Map<ScriptId, List<ScriptResource>> contents = new HashMap<ScriptId, List<ScriptResource>>();
+			Cursor cursor = db.query(tblName, COLS_RESOURCE, selection,
+					selectionArgs, null, null, null);
+			while (cursor.moveToNext()) {
+				ScriptId id = new ScriptId(cursor.getString(cursor.getColumnIndex(COL_NAME)),
+						cursor.getString(cursor.getColumnIndex(COL_NAMESPACE)));
+				List<ScriptResource> content = contents.get(id);
+				if (content == null) {
+					content = new ArrayList<ScriptResource>();
+					contents.put(id, content);
+				}
+				String resourceName = cursor.getString(cursor.getColumnIndex(COL_RESOURCENAME));
+				String resourceUrl = cursor.getString(cursor.getColumnIndex(COL_DOWNLOADURL));
+				byte[] resourceData = cursor.getBlob(cursor.getColumnIndex(COL_DATA));
+				content.add(new ScriptResource(resourceName, resourceUrl, resourceData));
+			}
+			cursor.close();
+			return contents;
+		}
+
+		/**
 		 * Fills the selection string and arguments for queries searching for
 		 * script IDs.
 		 * 
@@ -565,6 +682,27 @@ public class ScriptStoreSQLite implements ScriptStore {
 					fieldsMatches.add(fieldsMatch);
 				}
 			}
+			List<ContentValues> fieldsRequires = new ArrayList<ContentValues>();
+			ScriptRequire[] requires = script.getRequires();
+			if (requires != null) {
+				for (ScriptRequire require : requires) {
+					ContentValues fieldsRequire = new ContentValues(fieldsId);
+					fieldsRequire.put(COL_DOWNLOADURL, require.getUrl());
+					fieldsRequire.put(COL_CONTENT, require.getContent());
+					fieldsRequires.add(fieldsRequire);
+				}
+			}
+			List<ContentValues> fieldsResources = new ArrayList<ContentValues>();
+			ScriptResource[] resources = script.getResources();
+			if (resources != null) {
+				for (ScriptResource resource : resources) {
+					ContentValues fieldsResource = new ContentValues(fieldsId);
+					fieldsResource.put(COL_RESOURCENAME, resource.getName());
+					fieldsResource.put(COL_DOWNLOADURL, resource.getUrl());
+					fieldsResource.put(COL_DATA, resource.getData());
+					fieldsResources.add(fieldsResource);
+				}
+			}
 			ContentValues fieldsScript = new ContentValues(fieldsId);
 			fieldsScript.put(COL_DESCRIPTION, script.getDescription());
 			fieldsScript.put(COL_DOWNLOADURL, script.getDownloadurl());
@@ -605,6 +743,22 @@ public class ScriptStoreSQLite implements ScriptStore {
 						Log.e(TAG,
 								"Error inserting new script into the database (table "
 										+ TBL_MATCH + ")");
+						return;
+					}
+				}
+				for (ContentValues fieldsRequire : fieldsRequires) {
+					if (db.insert(TBL_REQUIRE, null, fieldsRequire) == -1) {
+						Log.e(TAG,
+								"Error inserting new script into the database (table "
+									+ TBL_REQUIRE + ")");
+						return;
+					}
+				}
+				for (ContentValues fieldsResource : fieldsResources) {
+					if (db.insert(TBL_RESOURCE, null, fieldsResource) == -1) {
+						Log.e(TAG,
+								"Error inserting new script into the database (table "
+										+ TBL_RESOURCE + ")");
 						return;
 					}
 				}
