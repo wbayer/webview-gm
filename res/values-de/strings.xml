@@ -16,7 +16,7 @@
     <string name="edited_script">Skript wurde bearbeitet</string>
     <string name="added_new_script">Neues Skript wurde erstellt</string>
     <string name="error_saving_script">Fehler beim Speichern des Skripts</string>
-    <string name="could_not_extract_id">Konnte Name/Namespace Felder nicht extrahieren</string>
+    <string name="syntax_or_dl_fail">Syntax Fehler oder Abhängigkeiten konnten nicht heruntergeladen werden</string>
     <string name="new_script_id_exists">Name/Namespace des neuen Skripts existieren bereits</string>
     <string name="error_while_loading">Fehler beim Laden</string>
     <string name="starting_download_of">Download wird gestartet von</string>

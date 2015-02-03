@@ -67,43 +67,75 @@ public class ScriptEditor {
 	 * Saves an existing or new script.
 	 */
 	protected void saveScript() {
-		Script script = Script.parse(scriptContent.getText().toString(),
-				(loadedScript == null) ? null : loadedScript.getDownloadurl());
-		if (script == null) {
-			Toast.makeText(
-					activity,
-					activity.getString(R.string.error_saving_script) + ": "
-							+ activity.getString(R.string.could_not_extract_id),
-					Toast.LENGTH_LONG).show();
-			return;
-		}
-		if (loadedScript == null) {
-			scriptStore.add(script);
-			Toast.makeText(
-					activity,
-					activity.getString(R.string.added_new_script) + " "
-							+ script.getName(), Toast.LENGTH_LONG).show();
-		} else {
-			if (!loadedScript.equals(script)) {
-				if (scriptStore.get(script) != null) {
-					Toast.makeText(
-							activity,
+		new Thread() {
+			public void run() {
+				Script script = Script.parse(
+						scriptContent.getText().toString(),
+						(loadedScript == null) ? null : loadedScript
+								.getDownloadurl());
+				if (script == null) {
+					makeToastOnUiThread(
 							activity.getString(R.string.error_saving_script)
 									+ ": "
 									+ activity
-											.getString(R.string.new_script_id_exists),
-							Toast.LENGTH_LONG).show();
+											.getString(R.string.syntax_or_dl_fail),
+							Toast.LENGTH_LONG);
 					return;
 				}
-				scriptStore.delete(loadedScript);
+				if (loadedScript == null) {
+					scriptStore.add(script);
+					makeToastOnUiThread(
+							activity.getString(R.string.added_new_script) + " "
+									+ script.getName(), Toast.LENGTH_LONG);
+				} else {
+					if (!loadedScript.equals(script)) {
+						if (scriptStore.get(script) != null) {
+							makeToastOnUiThread(
+									activity.getString(R.string.error_saving_script)
+											+ ": "
+											+ activity
+													.getString(R.string.new_script_id_exists),
+									Toast.LENGTH_LONG);
+							return;
+						}
+						scriptStore.delete(loadedScript);
+					}
+					scriptStore.add(script);
+					makeToastOnUiThread(
+							activity.getString(R.string.edited_script) + " "
+									+ script.getName(), Toast.LENGTH_SHORT);
+				}
+				loadedScript = null;
+				openScriptListOnUiThread();
 			}
-			scriptStore.add(script);
-			Toast.makeText(
-					activity,
-					activity.getString(R.string.edited_script) + " "
-							+ script.getName(), Toast.LENGTH_SHORT).show();
-		}
-		loadedScript = null;
+		}.start();
+	}
+
+	/**
+	 * Display a message on the UI thread.
+	 * 
+	 * @param text
+	 *            the message to display
+	 * @param duration
+	 *            how long to display the message
+	 */
+	private void makeToastOnUiThread(final CharSequence text, final int duration) {
+		activity.runOnUiThread(new Runnable() {
+			public void run() {
+				Toast.makeText(activity, text, duration).show();
+			}
+		});
+	}
+
+	/**
+	 * Switches back to script list on the UI thread.
+	 */
+	private void openScriptListOnUiThread() {
+		activity.runOnUiThread(new Runnable() {
+			public void run() {
+				activity.openScriptList();
+			}
+		});
 	}
 
 	/**
@@ -122,7 +154,6 @@ public class ScriptEditor {
 				((InputMethodManager) activity
 						.getSystemService(Context.INPUT_METHOD_SERVICE))
 						.hideSoftInputFromWindow(v.getWindowToken(), 0);
-				activity.openScriptList();
 			}
 		});
 	}

@@ -51,6 +51,9 @@ public class Script extends ScriptMetadata {
 	 * Extracts a script's properties from its string content and creates a new
 	 * Script object with the extracted data.
 	 * 
+	 * Should not be run on the UI thread due to possible network activity for
+	 * any required scripts or resources.
+	 * 
 	 * Pattern to extract single metadata property taken from Greasemonkey's
 	 * parseScript.js (MIT license, Copyright 2004-2007 Aaron Boodman).
 	 * 
@@ -200,6 +203,8 @@ public class Script extends ScriptMetadata {
 
 	/**
 	 * Downloads a @require'd script for the current script.
+	 * 
+	 * Not to be run on the UI thread.
 	 *
 	 * @param requireUrl
 	 *            a @require URL indicating where to download a required script
@@ -220,6 +225,8 @@ public class Script extends ScriptMetadata {
 
 	/**
 	 * Downloads @resource'd file for the current script.
+	 * 
+	 * Not to be run on the UI thread.
 	 *
 	 * @param resourceName
 	 *            a @resource name, to identify the downloaded resource.

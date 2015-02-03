@@ -16,7 +16,7 @@
     <string name="edited_script">Edited script</string>
     <string name="added_new_script">Added new script</string>
     <string name="error_saving_script">Error saving script</string>
-    <string name="could_not_extract_id">Could not extract name/namespace</string>
+    <string name="syntax_or_dl_fail">Syntax error or dependency download failed</string>
     <string name="new_script_id_exists">New script name/namespace already exists</string>
     <string name="error_while_loading">Error while loading</string>
     <string name="starting_download_of">Starting download of</string>
