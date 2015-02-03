@@ -14,12 +14,7 @@
  *    limitations under the License.
  */
 
-
 package at.pardus.android.webview.gm.run;
-
-import android.util.Base64;
-import android.util.Log;
-import android.webkit.WebView;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +35,9 @@ import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.util.Base64;
+import android.util.Log;
+import android.webkit.WebView;
 import at.pardus.android.webview.gm.util.UnicodeReader;
 
 public class WebViewXmlHttpRequest {
@@ -105,18 +103,20 @@ public class WebViewXmlHttpRequest {
 		try {
 			return this.data.getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			Log.e(TAG, "Unable to get UTF-8 bytes from string data: " + this.data);
+			Log.e(TAG, "Unable to get UTF-8 bytes from string data: "
+					+ this.data);
 			return null;
 		}
 	}
 
-	public Map<String,String> getHeaders() {
+	public Map<String, String> getHeaders() {
 		if (this.headers == null) {
 			return null;
 		}
 
-		Map<String,String> headers = new HashMap<String,String>();
-		for (Iterator<?> keyIterator = this.headers.keys(); keyIterator.hasNext();) {
+		Map<String, String> headers = new HashMap<String, String>();
+		for (Iterator<?> keyIterator = this.headers.keys(); keyIterator
+				.hasNext();) {
 			String keyName = (String) keyIterator.next();
 
 			try {
@@ -146,8 +146,8 @@ public class WebViewXmlHttpRequest {
 	}
 
 	/**
-	 * Initiates a cross-domain HTTP Request to the address
-	 * specified by this object's "url" member.
+	 * Initiates a cross-domain HTTP Request to the address specified by this
+	 * object's "url" member.
 	 */
 	public WebViewXmlHttpResponse execute() {
 		if (this.synchronous) {
@@ -158,7 +158,8 @@ public class WebViewXmlHttpRequest {
 	}
 
 	private WebViewXmlHttpResponse executeHttpRequestAsync() {
-		WebViewXmlHttpResponse response = new WebViewXmlHttpResponse(this.context);
+		WebViewXmlHttpResponse response = new WebViewXmlHttpResponse(
+				this.context);
 		Thread thread = new Thread() {
 			@Override
 			public void run() {
@@ -171,7 +172,8 @@ public class WebViewXmlHttpRequest {
 	}
 
 	private WebViewXmlHttpResponse executeHttpRequestSync() {
-		WebViewXmlHttpResponse response = new WebViewXmlHttpResponse(this.context);
+		WebViewXmlHttpResponse response = new WebViewXmlHttpResponse(
+				this.context);
 		StringBuilder out = new StringBuilder();
 		URL url;
 		int totalBytesRead = 0;
@@ -188,7 +190,8 @@ public class WebViewXmlHttpRequest {
 		}
 
 		try {
-			HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+			HttpURLConnection httpConn = (HttpURLConnection) url
+					.openConnection();
 
 			response.setReadyState(WebViewXmlHttpResponse.READY_STATE_OPENED);
 			executeOnReadyStateChangeCallback(response);
@@ -196,31 +199,38 @@ public class WebViewXmlHttpRequest {
 			// Set connection properties for the GM_xmlhttpRequest
 			if (outputData != null) {
 				httpConn.setDoOutput(true);
-				httpConn.setRequestProperty("Content-Length", Integer.toString(outputData.length));
+				httpConn.setRequestProperty("Content-Length",
+						Integer.toString(outputData.length));
 			}
 
 			if ((!this.user.equals("")) && (!this.password.equals(""))) {
-				httpConn.setRequestProperty("Authorization", "Basic "
-						+ Base64.encodeToString((this.user + ":"
-						+ this.password).getBytes("UTF-8"), Base64.DEFAULT));
+				httpConn.setRequestProperty(
+						"Authorization",
+						"Basic "
+								+ Base64.encodeToString(
+										(this.user + ":" + this.password)
+												.getBytes("UTF-8"),
+										Base64.DEFAULT));
 			}
 
 			httpConn.setRequestMethod(this.method);
 
-			Map<String,String> headers = this.getHeaders();
+			Map<String, String> headers = this.getHeaders();
 			if (this.headers != null) {
-				for (String key: headers.keySet()) {
+				for (String key : headers.keySet()) {
 					httpConn.setRequestProperty(key, headers.get(key));
 				}
 			}
 
 			if (!this.overrideMimeType.equals("")) {
-				httpConn.setRequestProperty("Content-Type", this.overrideMimeType);
+				httpConn.setRequestProperty("Content-Type",
+						this.overrideMimeType);
 			}
 
-			// #TODO #FIXME this makes the timeouts cumulative, but it seems most sensible
-			// doesn't seem like we can set a timeout for the write either, so POST, PUT
-			// wont ever timeout... seems like there should be a better way!
+			// #TODO #FIXME this makes the timeouts cumulative, but it seems
+			// most sensible doesn't seem like we can set a timeout for the
+			// write either, so POST, PUT wont ever timeout... seems like there
+			// should be a better way!
 			httpConn.setConnectTimeout(this.timeout);
 			httpConn.setReadTimeout(this.timeout);
 
@@ -247,7 +257,8 @@ public class WebViewXmlHttpRequest {
 			executeOnReadyStateChangeCallback(response);
 
 			if (httpConn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-				Log.e(TAG, "HTTP error from url: " + this.url + " HTTP Response " + httpConn.getResponseCode());
+				Log.e(TAG, "HTTP error from url: " + this.url
+						+ " HTTP Response " + httpConn.getResponseCode());
 				httpConn.disconnect();
 				executeOnErrorCallback(response);
 				return response;
@@ -255,8 +266,9 @@ public class WebViewXmlHttpRequest {
 
 			// Save all the response headers to the response object.
 			String allHeaders = "";
-			Set<Map.Entry<String, List<String>>> responseHeaderSet = httpConn.getHeaderFields().entrySet();
-			for (Map.Entry kvp: responseHeaderSet) {
+			Set<Map.Entry<String, List<String>>> responseHeaderSet = httpConn
+					.getHeaderFields().entrySet();
+			for (Map.Entry<String, List<String>> kvp : responseHeaderSet) {
 				allHeaders += kvp.getKey() + ": " + kvp.getValue() + "\n";
 			}
 
@@ -273,18 +285,19 @@ public class WebViewXmlHttpRequest {
 			response.setReadyState(WebViewXmlHttpResponse.READY_STATE_LOADING);
 			executeOnReadyStateChangeCallback(response);
 
-			// Begin receiving any response data/
+			// Begin receiving any response data.
 			InputStream inputStream = httpConn.getInputStream();
 			int bytesRead;
 			char[] buffer = new char[4096];
-			Reader in = new UnicodeReader(inputStream, httpConn.getContentEncoding());
+			Reader in = new UnicodeReader(inputStream,
+					httpConn.getContentEncoding());
 
 			while ((bytesRead = in.read(buffer, 0, 4096)) != -1) {
 				if (bytesRead <= 0) {
 					break;
 				}
 
-				// Progress events are always 1-step behind where we currently are.
+				// Progress events are always 1-step behind we currently are.
 				if ((totalBytesRead) > 0 && (contentLength > 0)) {
 					response.setLoaded(totalBytesRead);
 					executeOnProgressCallback(response);
@@ -305,19 +318,20 @@ public class WebViewXmlHttpRequest {
 
 			executeOnLoadCallback(response);
 		} catch (SocketTimeoutException e) {
-			Log.e(TAG, "Timeout issuing GM_xmlhttpRequest for: "
-					+ this.url + ": " + e.getMessage());
+			Log.e(TAG, "Timeout issuing GM_xmlhttpRequest for: " + this.url
+					+ ": " + e.getMessage());
 			executeOnTimeoutCallback(response);
 		} catch (ConnectTimeoutException e) {
 			Log.e(TAG, "Connection timeout issuing GM_xmlhttpRequest for: "
 					+ this.url + ": " + e.getMessage());
 			executeOnTimeoutCallback(response);
 		} catch (UnsupportedEncodingException e) {
-			Log.e(TAG, "Unable to get UTF-8 bytes for HTTP Basic Auth username/password");
+			Log.e(TAG,
+					"Unable to get UTF-8 bytes for HTTP Basic Auth username/password");
 			return null;
 		} catch (IOException e) {
-			Log.e(TAG, "Exception issuing GM_xmlhttpRequest for: "
-					+ this.url + ": " + e.getMessage());
+			Log.e(TAG, "Exception issuing GM_xmlhttpRequest for: " + this.url
+					+ ": " + e.getMessage());
 
 			if (duringUpload) {
 				executeUploadOnErrorCallback(response);
@@ -330,11 +344,11 @@ public class WebViewXmlHttpRequest {
 	}
 
 	private void loadUrlOnUiThread(final String jsUrl) {
-		view.post( new Runnable() {
+		view.post(new Runnable() {
 			public void run() {
 				view.loadUrl(jsUrl);
 			}
-		} );
+		});
 	}
 
 	private void executeOnErrorCallback(WebViewXmlHttpResponse response) {
@@ -342,8 +356,9 @@ public class WebViewXmlHttpRequest {
 			return;
 		}
 
-		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + this.onError
-				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow."
+				+ this.onError + "(JSON.parse(" + response.toJSONString()
+				+ ")); })()");
 	}
 
 	private void executeOnLoadCallback(WebViewXmlHttpResponse response) {
@@ -351,8 +366,9 @@ public class WebViewXmlHttpRequest {
 			return;
 		}
 
-		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + this.onLoad
-				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow."
+				+ this.onLoad + "(JSON.parse(" + response.toJSONString()
+				+ ")); })()");
 	}
 
 	private void executeOnProgressCallback(WebViewXmlHttpResponse response) {
@@ -360,17 +376,20 @@ public class WebViewXmlHttpRequest {
 			return;
 		}
 
-		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + this.onProgress
-				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow."
+				+ this.onProgress + "(JSON.parse(" + response.toJSONString()
+				+ ")); })()");
 	}
 
-	private void executeOnReadyStateChangeCallback(WebViewXmlHttpResponse response) {
+	private void executeOnReadyStateChangeCallback(
+			WebViewXmlHttpResponse response) {
 		if (this.onReadyStateChange.equals("")) {
 			return;
 		}
 
-		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + this.onReadyStateChange
-				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow."
+				+ this.onReadyStateChange + "(JSON.parse("
+				+ response.toJSONString() + ")); })()");
 	}
 
 	private void executeOnTimeoutCallback(WebViewXmlHttpResponse response) {
@@ -378,8 +397,9 @@ public class WebViewXmlHttpRequest {
 			return;
 		}
 
-		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + this.onTimeout
-				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow."
+				+ this.onTimeout + "(JSON.parse(" + response.toJSONString()
+				+ ")); })()");
 	}
 
 	private void executeUploadOnErrorCallback(WebViewXmlHttpResponse response) {
@@ -387,8 +407,9 @@ public class WebViewXmlHttpRequest {
 			return;
 		}
 
-		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + getUploadOnError()
-				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow."
+				+ getUploadOnError() + "(JSON.parse(" + response.toJSONString()
+				+ ")); })()");
 	}
 
 	private void executeUploadOnLoadCallback(WebViewXmlHttpResponse response) {
@@ -396,7 +417,8 @@ public class WebViewXmlHttpRequest {
 			return;
 		}
 
-		loadUrlOnUiThread("javascript: (function() { unsafeWindow." + getUploadOnLoad()
-				+ "(JSON.parse(" + response.toJSONString() + ")); })()");
+		loadUrlOnUiThread("javascript: (function() { unsafeWindow."
+				+ getUploadOnLoad() + "(JSON.parse(" + response.toJSONString()
+				+ ")); })()");
 	}
 }

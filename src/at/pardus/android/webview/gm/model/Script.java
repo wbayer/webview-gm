@@ -36,8 +36,7 @@ public class Script extends ScriptMetadata {
 			String[] include, String[] match, String description,
 			String downloadurl, String updateurl, String installurl,
 			String icon, String runAt, boolean unwrap, String version,
-			ScriptRequire[] requires, ScriptResource[] resources,
-			String content) {
+			ScriptRequire[] requires, ScriptResource[] resources, String content) {
 		super(name, namespace, exclude, include, match, description,
 				downloadurl, updateurl, installurl, icon, runAt, unwrap,
 				version, requires, resources);
@@ -142,13 +141,16 @@ public class Script extends ScriptMetadata {
 						}
 						requires.add(require);
 					} else if (propertyName.equals("resource")) {
-						Pattern resourcePattern = Pattern.compile("(\\S+)\\s+(.*)");
-						Matcher resourceMatcher = resourcePattern.matcher(propertyValue);
+						Pattern resourcePattern = Pattern
+								.compile("(\\S+)\\s+(.*)");
+						Matcher resourceMatcher = resourcePattern
+								.matcher(propertyValue);
 						if (!resourceMatcher.matches()) {
 							return null;
 						}
-						ScriptResource resource = downloadResource(resourceMatcher.group(1),
-									resourceMatcher.group(2));
+						ScriptResource resource = downloadResource(
+								resourceMatcher.group(1),
+								resourceMatcher.group(2));
 						if (resource == null) {
 							return null;
 						}
@@ -179,7 +181,8 @@ public class Script extends ScriptMetadata {
 			requireArr = requires.toArray(new ScriptRequire[requires.size()]);
 		}
 		if (resources.size() > 0) {
-			resourceArr = resources.toArray(new ScriptResource[resources.size()]);
+			resourceArr = resources
+					.toArray(new ScriptResource[resources.size()]);
 		}
 		if (exclude.size() > 0) {
 			excludeArr = exclude.toArray(new String[exclude.size()]);
@@ -199,13 +202,13 @@ public class Script extends ScriptMetadata {
 	 * Downloads a @require'd script for the current script.
 	 *
 	 * @param requireUrl
- 	 *		a @require URL indicating where to download a required script from.
-	 * @return a boolean value indicating whether the download operation was successful
-	 *         for all @require entries.
+	 *            a @require URL indicating where to download a required script
+	 *            from.
+	 * @return a boolean value indicating whether the download operation was
+	 *         successful for all @require entries.
 	 * @see <tt><a href="http://wiki.greasespot.net/Metadata_Block">Metadata Block</a></tt>
 	 */
-	public static ScriptRequire downloadRequire(String requireUrl)
-	{
+	public static ScriptRequire downloadRequire(String requireUrl) {
 		String requireContent = DownloadHelper.downloadScript(requireUrl);
 
 		if (requireContent == null) {
@@ -219,15 +222,15 @@ public class Script extends ScriptMetadata {
 	 * Downloads @resource'd file for the current script.
 	 *
 	 * @param resourceName
-	 * 		a @resource name, to identify the downloaded resource.
+	 *            a @resource name, to identify the downloaded resource.
 	 * @param resourceUrl
-	 *		a @resource URL indicating where to download a resource from.
-	 * @return a boolean value indicating whether the download operation was successful
-	 *         for all @resource entries.
+	 *            a @resource URL indicating where to download a resource from.
+	 * @return a boolean value indicating whether the download operation was
+	 *         successful for all @resource entries.
 	 * @see <tt><a href="http://wiki.greasespot.net/Metadata_Block">Metadata Block</a></tt>
 	 */
-	public static ScriptResource downloadResource(String resourceName, String resourceUrl)
-	{
+	public static ScriptResource downloadResource(String resourceName,
+			String resourceUrl) {
 		byte[] resourceData = DownloadHelper.downloadBytes(resourceUrl);
 
 		if (resourceData == null) {

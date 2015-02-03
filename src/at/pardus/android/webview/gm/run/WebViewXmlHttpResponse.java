@@ -14,12 +14,12 @@
  *    limitations under the License.
  */
 
-
 package at.pardus.android.webview.gm.run;
 
-import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import android.util.Log;
 
 public class WebViewXmlHttpResponse {
 
@@ -31,7 +31,8 @@ public class WebViewXmlHttpResponse {
 	public static final int READY_STATE_LOADING = 3;
 	public static final int READY_STATE_DONE = 4;
 
-	private int readyState; // Java has no unsigned types, this should be unsigned short.
+	private int readyState; // Java has no unsigned types, this should be
+							// unsigned short.
 	private String responseHeaders;
 	private String responseText;
 	private int status; // This should also be an unsigned short.
@@ -40,7 +41,8 @@ public class WebViewXmlHttpResponse {
 	private JSONObject context;
 	private String finalUrl;
 
-	//@see <tt><a href="https://developer.mozilla.org/en-US/docs/Web/API/ProgressEvent">ProgressEvent</a></tt>
+	// @see <tt><a
+	// href="https://developer.mozilla.org/en-US/docs/Web/API/ProgressEvent">ProgressEvent</a></tt>
 	private boolean lengthComputable;
 	private long loaded; // Should be unsigned long long
 	private long total; // Should also be unsigned long long.
@@ -78,7 +80,8 @@ public class WebViewXmlHttpResponse {
 				self.put("context", this.context);
 			}
 		} catch (JSONException e) {
-			Log.e(TAG, "Failed to generate JSON response object:" + e.getMessage());
+			Log.e(TAG,
+					"Failed to generate JSON response object:" + e.getMessage());
 			return null;
 		}
 
@@ -94,7 +97,7 @@ public class WebViewXmlHttpResponse {
 	}
 
 	public void setResponseText(String newResponseText) {
-		this.responseText =  newResponseText;
+		this.responseText = newResponseText;
 	}
 
 	public void setStatus(int newStatus) {

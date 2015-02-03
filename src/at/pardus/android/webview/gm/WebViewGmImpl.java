@@ -82,7 +82,7 @@ public class WebViewGmImpl extends ScriptManagerActivity {
 				scriptStore.open();
 			}
 			scriptBrowser = new ScriptBrowser(this, scriptStore,
-					preferences.getString("lastUrl", "http://userscripts.org/"));
+					preferences.getString("lastUrl", "https://greasyfork.org/"));
 		}
 		setContentView(scriptBrowser.getBrowser());
 		placeHistory.push(BROWSER);

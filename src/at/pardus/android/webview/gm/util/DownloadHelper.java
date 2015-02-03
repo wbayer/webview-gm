@@ -16,7 +16,6 @@
 
 package at.pardus.android.webview.gm.util;
 
-import android.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,13 +24,16 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import android.util.Log;
+
 /**
- * Class offering static functions to download data from a given URL
- * either as a String or byte[]
+ * Class offering static functions to download data from a given URL either as a
+ * String or byte[]
  */
 public class DownloadHelper {
 
 	private static final String TAG = DownloadHelper.class.getName();
+
 	/**
 	 * Downloads and returns a file as String.
 	 *
@@ -99,8 +101,7 @@ public class DownloadHelper {
 	}
 
 	/**
-	 * Downloads and returns a file as an array
-	 * of bytes.
+	 * Downloads and returns a file as an array of bytes.
 	 *
 	 * Not to be run on the UI thread.
 	 *
@@ -111,10 +112,12 @@ public class DownloadHelper {
 	public static byte[] downloadBytes(String downloadUrl) {
 		try {
 			URL url = new URL(downloadUrl);
-			HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+			HttpURLConnection httpConn = (HttpURLConnection) url
+					.openConnection();
 
 			if (httpConn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-				Log.e(TAG, "Exception downloading url: " + downloadUrl + " HTTP Response " + httpConn.getResponseCode());
+				Log.e(TAG, "Exception downloading url: " + downloadUrl
+						+ " HTTP Response " + httpConn.getResponseCode());
 				httpConn.disconnect();
 				return null;
 			}
@@ -125,7 +128,7 @@ public class DownloadHelper {
 			byte[] buffer;
 			byte[] tempBuffer = new byte[4096];
 
-			while(true) {
+			while (true) {
 				bytesRead = inputStream.read(tempBuffer);
 				if (bytesRead == -1) {
 					break;
@@ -136,9 +139,9 @@ public class DownloadHelper {
 			buffer = byteArrayOutputStream.toByteArray();
 			inputStream.close();
 			return buffer;
-		} catch (IOException e)
-		{
-			Log.e(TAG, "Exception downloading url: " + downloadUrl + " as file: " + e.getMessage());
+		} catch (IOException e) {
+			Log.e(TAG, "Exception downloading url: " + downloadUrl
+					+ " as file: " + e.getMessage());
 		}
 
 		return null;

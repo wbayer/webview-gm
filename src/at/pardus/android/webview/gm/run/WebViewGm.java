@@ -18,6 +18,7 @@ package at.pardus.android.webview.gm.run;
 
 import java.util.UUID;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.webkit.WebSettings;
@@ -94,6 +95,7 @@ public class WebViewGm extends WebView {
 	/**
 	 * Called by the constructors to set up the WebView to enable user scripts.
 	 */
+	@SuppressLint("SetJavaScriptEnabled")
 	private void init() {
 		WebSettings settings = getSettings();
 		settings.setJavaScriptEnabled(true);
@@ -115,9 +117,8 @@ public class WebViewGm extends WebView {
 	 */
 	public void setScriptStore(ScriptStore scriptStore) {
 		this.scriptStore = scriptStore;
-		addJavascriptInterface(
-				new WebViewGmApi(this, scriptStore, webViewClient.getSecret()),
-				JSBRIDGENAME);
+		addJavascriptInterface(new WebViewGmApi(this, scriptStore,
+				webViewClient.getSecret()), JSBRIDGENAME);
 		webViewClient.setScriptStore(scriptStore);
 	}
 

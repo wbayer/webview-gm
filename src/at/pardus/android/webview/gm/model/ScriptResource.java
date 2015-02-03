@@ -16,11 +16,11 @@
 
 package at.pardus.android.webview.gm.model;
 
+import java.io.UnsupportedEncodingException;
+
 import android.text.TextUtils;
 import android.util.Base64;
 import android.webkit.MimeTypeMap;
-
-import java.io.UnsupportedEncodingException;
 
 /**
  * Object containing one @resource Metadata entry.
@@ -32,8 +32,7 @@ public class ScriptResource {
 	private String url;
 	private byte[] data;
 
-	public ScriptResource(String name, String url, byte[] data)
-	{
+	public ScriptResource(String name, String url, byte[] data) {
 		this.name = name;
 		this.url = url;
 		this.data = data;
@@ -54,16 +53,15 @@ public class ScriptResource {
 	/**
 	 * Converts the "data" byte array into a base64 String.
 	 *
-	 * @return A base64 encoded String representing this class' 'data'
-	 *         variable
+	 * @return A base64 encoded String representing this class' 'data' variable
 	 */
 	public String getDataBase64() {
 		return Base64.encodeToString(this.data, Base64.DEFAULT);
 	}
 
 	/**
-	 * Converts the "data" byte array into a String which can be
-	 * used as a javascript data URI.
+	 * Converts the "data" byte array into a String which can be used as a
+	 * javascript data URI.
 	 *
 	 * @return A RFC 2397 data URI String representing this class' 'data'
 	 *         variable
@@ -85,14 +83,12 @@ public class ScriptResource {
 	}
 
 	/**
-	 * Converts the "data" byte array into a UTF-8 String which can be
-	 * used passed to a userscript.
+	 * Converts the "data" byte array into a UTF-8 String which can be used
+	 * passed to a userscript.
 	 *
-	 * @return A UTF-8 String representing this class' 'data'
-	 *         variable
+	 * @return A UTF-8 String representing this class' 'data' variable
 	 */
-	public String getJavascriptString()
-	{
+	public String getJavascriptString() {
 		try {
 			return new String(this.data, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
