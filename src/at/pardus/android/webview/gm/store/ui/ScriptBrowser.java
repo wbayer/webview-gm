@@ -87,6 +87,19 @@ public class ScriptBrowser {
 				+ script, Toast.LENGTH_LONG);
 	}
 
+	protected boolean checkDownload(final String url) {
+		if (url.endsWith(".user.js")) {
+			// TODO ask before installing new script
+			new Thread() {
+				public void run() {
+					installScript(url);
+				}
+			}.start();
+			return true;
+		}
+		return false;
+	}
+
 	/**
 	 * Inflates the WebViewGm from XML and sets up its WebViewClient,
 	 * WebChromeClient and DownloadListener. Also inflates and sets up the
@@ -246,21 +259,13 @@ public class ScriptBrowser {
 
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, final String url) {
-			if (url.endsWith(".user.js")) {
-				// TODO ask before installing new script
-				new Thread() {
-					public void run() {
-						scriptBrowser.installScript(url);
-					}
-				}.start();
-				return true;
-			}
-			return false;
+			return scriptBrowser.checkDownload(url);
 		}
 
 		@Override
 		public void onPageStarted(WebView view, String url, Bitmap favicon) {
 			scriptBrowser.addressField.setText(url);
+			scriptBrowser.checkDownload(url);
 			super.onPageStarted(view, url, favicon);
 		}
 
@@ -299,14 +304,7 @@ public class ScriptBrowser {
 		@Override
 		public void onDownloadStart(final String url, String userAgent,
 				String contentDisposition, String mimetype, long contentLength) {
-			if (url.endsWith(".user.js")) {
-				// TODO ask before installing new script
-				new Thread() {
-					public void run() {
-						scriptBrowser.installScript(url);
-					}
-				}.start();
-			}
+			scriptBrowser.checkDownload(url);
 		}
 
 	}
