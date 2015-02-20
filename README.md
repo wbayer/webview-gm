@@ -27,7 +27,7 @@ ToDo
 ----
 
 Missing GM functions:
-GM_registerMenuCommand, GM_openInTab, GM_info
+GM_registerMenuCommand, GM_openInTab, GM_info, GM_setClipboard
 See http://wiki.greasespot.net/Greasemonkey_Manual:API
 
 Missing metablock header interpretation/implementation:
@@ -35,9 +35,11 @@ Missing metablock header interpretation/implementation:
 See http://wiki.greasespot.net/Metadata_Block
 
 Improvement of the user interface.
+Update checks of the installed user scripts.
 
 Limitations
 -----------
+
 GM_xmlhttpRequest implementation is missing an "abort()" callback.
 
 Contributing

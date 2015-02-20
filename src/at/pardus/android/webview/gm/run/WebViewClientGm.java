@@ -43,7 +43,8 @@ public class WebViewClientGm extends WebViewClient {
 
 	private static final String JSMISSINGFUNCTIONS = "var GM_info = "
 			+ JSMISSINGFUNCTION + "var GM_openInTab = " + JSMISSINGFUNCTION
-			+ "var GM_registerMenuCommand = " + JSMISSINGFUNCTION;
+			+ "var GM_registerMenuCommand = " + JSMISSINGFUNCTION
+			+ "var GM_setClipboard = " + JSMISSINGFUNCTION;
 
 	private ScriptStore scriptStore;
 
