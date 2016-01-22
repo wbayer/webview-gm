@@ -1,0 +1,25 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "23.0.2"
+
+    defaultConfig {
+        applicationId "at.pardus.android.webview.gm.demo"
+        minSdkVersion 8
+        targetSdkVersion 22
+        versionCode 4
+        versionName "1.1.1"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile(project(':webview-gm-lib'))
+    compile(project(':webview-gm-ui'))
+}

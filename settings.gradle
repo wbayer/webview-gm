@@ -1,1 +1,1 @@
-include ':app'
+include ':webview-gm-lib', ':webview-gm-ui', ':webview-gm-demo'

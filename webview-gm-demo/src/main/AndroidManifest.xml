@@ -1,0 +1,21 @@
+<manifest
+    package="at.pardus.android.webview.gm.demo"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <application>
+        <activity
+            android:name="at.pardus.android.webview.gm.demo.WebViewGmImpl"
+            android:configChanges="orientation|keyboardHidden"
+            android:description="@string/webviewgm_impl_app_description"
+            android:label="@string/webviewgm_impl_app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="webviewgm_impl_app_name">Userscript Browser</string>
+    <string name="webviewgm_impl_app_description">Implementation of the WebView GM library. Features the fast default browser with support of Greasemonkey functions and the management of user scripts.</string>
+
+</resources>
