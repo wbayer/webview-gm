@@ -2,14 +2,14 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion '23.0.2'
 
     defaultConfig {
         applicationId "at.pardus.android.webview.gm.demo"
         minSdkVersion 8
         targetSdkVersion 18
         versionCode 4
-        versionName "1.1.1"
+        versionName '1.1.1'
     }
     buildTypes {
         release {
@@ -24,6 +24,6 @@ android {
 }
 
 dependencies {
-    compile project(':webview-gm-lib')
-    compile project(':webview-gm-ui')
+    compile 'at.pardus.android:webview-gm-lib:1.1.1'
+    compile 'at.pardus.android:webview-gm-ui:1.1.1'
 }

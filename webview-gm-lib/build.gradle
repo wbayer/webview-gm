@@ -1,7 +1,13 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+group = 'at.pardus.android'
+version = '1.1.1'
+
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion '23.0.2'
 
     defaultConfig {
         minSdkVersion 8
@@ -16,6 +22,24 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_6
         targetCompatibility JavaVersion.VERSION_1_6
     }
+}
+
+apply from: '../srcDoc.gradle'
+artifacts {
+    archives generateJavadocsJar
+    archives generateSourcesJar
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+bintray {
+    user = properties.getProperty('bintray.user')
+    key = properties.getProperty('bintray.apikey')
+    pkg {
+        repo = 'maven'
+        name = 'webview-gm-lib'
+    }
+    configurations = ['archives']
 }
 
 dependencies {
