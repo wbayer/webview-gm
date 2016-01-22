@@ -7,7 +7,7 @@ android {
     defaultConfig {
         applicationId "at.pardus.android.webview.gm.demo"
         minSdkVersion 8
-        targetSdkVersion 22
+        targetSdkVersion 18
         versionCode 4
         versionName "1.1.1"
     }
@@ -17,9 +17,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_6
+        targetCompatibility JavaVersion.VERSION_1_6
+    }
 }
 
 dependencies {
-    compile(project(':webview-gm-lib'))
-    compile(project(':webview-gm-ui'))
+    compile project(':webview-gm-lib')
+    compile project(':webview-gm-ui')
 }
