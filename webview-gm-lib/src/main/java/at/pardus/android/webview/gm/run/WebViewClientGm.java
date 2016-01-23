@@ -17,6 +17,7 @@
 package at.pardus.android.webview.gm.run;
 
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.util.Log;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -233,16 +234,16 @@ public class WebViewClientGm extends WebViewClient {
 					}
 				}
 
-				if (script.isUnwrap()) {
-					view.loadUrl("javascript:\n" + jsApi + jsAllRequires
-							+ jsBeforeScript + script.getContent()
-							+ jsAfterScript);
-				} else {
-					view.loadUrl("javascript:\n" + JSCONTAINERSTART + jsApi
-							+ jsAllRequires + jsBeforeScript
-							+ script.getContent() + jsAfterScript
-							+ JSCONTAINEREND);
-				}
+                String jsCode = jsApi + jsAllRequires + jsBeforeScript + script
+                        .getContent() + jsAfterScript;
+                if (!script.isUnwrap()) {
+                    jsCode = JSCONTAINERSTART + jsCode + JSCONTAINEREND;
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    view.evaluateJavascript(jsCode, null);
+                } else {
+                    view.loadUrl("javascript:\n" + jsCode);
+                }
 			}
 		}
 	}
