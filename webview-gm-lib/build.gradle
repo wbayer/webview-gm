@@ -2,8 +2,11 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
-group = 'at.pardus.android'
-version = '1.1.1'
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+group = properties.getProperty('artifact.group')
+version = '1.1.2'
 
 android {
     compileSdkVersion 23
@@ -30,8 +33,37 @@ artifacts {
     archives generateSourcesJar
 }
 
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging 'aar'
+                name 'WebView-GM'
+                description = 'Android library for Greasemonkey-compatible user script support'
+                url properties.getProperty('site.url')
+                licenses {
+                    license {
+                        name properties.getProperty('license.name')
+                        url properties.getProperty('license.url')
+                    }
+                }
+                developers {
+                    developer {
+                        id properties.getProperty('developer.id')
+                        name properties.getProperty('developer.name')
+                        email properties.getProperty('developer.email')
+                    }
+                }
+                scm {
+                    connection properties.getProperty('scm.connection')
+                    developerConnection properties.getProperty('scm.connection')
+                    url properties.getProperty('site.url')
+                }
+            }
+        }
+    }
+}
+
 bintray {
     user = properties.getProperty('bintray.user')
     key = properties.getProperty('bintray.apikey')
