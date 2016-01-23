@@ -8,18 +8,18 @@ Usage
 -----
 
 ##### Gradle
-        compile 'at.pardus.android:webview-gm-lib:1.1.2'
-        compile 'at.pardus.android:webview-gm-ui:1.1.2'
+        compile 'at.pardus.android:webview-gm-lib:1.2.0'
+        compile 'at.pardus.android:webview-gm-ui:1.2.0'
 ##### Maven
         <dependency>
             <groupId>at.pardus.android</groupId>
             <artifactId>webview-gm-lib</artifactId>
-            <version>1.1.2</version>
+            <version>1.2.0</version>
         </dependency>
         <dependency>
             <groupId>at.pardus.android</groupId>
             <artifactId>webview-gm-ui</artifactId>
-            <version>1.1.2</version>
+            <version>1.2.0</version>
         </dependency>
 * Create a new **ScriptStoreSQLite** object for script and value
   persistence, or implement your own ScriptStore.

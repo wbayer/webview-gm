@@ -8,8 +8,8 @@ android {
         applicationId "at.pardus.android.webview.gm.demo"
         minSdkVersion 8
         targetSdkVersion 22
-        versionCode 5
-        versionName '1.1.2'
+        versionCode 6
+        versionName '1.2.0'
     }
     buildTypes {
         release {
@@ -25,7 +25,7 @@ android {
 
 dependencies {
     compile(new File('webview-gm-lib').exists() ? project(':webview-gm-lib') : 'at.pardus' +
-            '.android:webview-gm-lib:1.1.2')
+            '.android:webview-gm-lib:1.2.0')
     compile(new File('webview-gm-ui').exists() ? project(':webview-gm-ui') : 'at.pardus' +
-            '.android:webview-gm-ui:1.1.2')
+            '.android:webview-gm-ui:1.2.0')
 }

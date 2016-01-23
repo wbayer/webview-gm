@@ -6,7 +6,7 @@ Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 group = properties.getProperty('artifact.group')
-version = '1.1.2'
+version = '1.2.0'
 
 android {
     compileSdkVersion 23
@@ -76,5 +76,5 @@ bintray {
 
 dependencies {
     compile(new File('webview-gm-lib').exists() ? project(':webview-gm-lib') : 'at.pardus' +
-            '.android:webview-gm-lib:1.1.2')
+            '.android:webview-gm-lib:1.2.0')
 }
