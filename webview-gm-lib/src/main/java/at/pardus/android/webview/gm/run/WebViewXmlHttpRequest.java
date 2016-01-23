@@ -20,7 +20,6 @@ import android.util.Base64;
 import android.util.Log;
 import android.webkit.WebView;
 
-import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -322,10 +321,6 @@ public class WebViewXmlHttpRequest {
 			Log.e(TAG, "Timeout issuing GM_xmlhttpRequest for: " + this.url
 					+ ": " + e.getMessage());
 			executeOnTimeoutCallback(response);
-		} catch (ConnectTimeoutException e) {
-			Log.e(TAG, "Connection timeout issuing GM_xmlhttpRequest for: "
-					+ this.url + ": " + e.getMessage());
-			executeOnTimeoutCallback(response);
 		} catch (UnsupportedEncodingException e) {
 			Log.e(TAG,
 					"Unable to get UTF-8 bytes for HTTP Basic Auth username/password");
@@ -404,7 +399,7 @@ public class WebViewXmlHttpRequest {
 	}
 
 	private void executeUploadOnErrorCallback(WebViewXmlHttpResponse response) {
-		if (this.upload.equals("")) {
+		if (upload == null || upload.length() == 0) {
 			return;
 		}
 
@@ -414,9 +409,9 @@ public class WebViewXmlHttpRequest {
 	}
 
 	private void executeUploadOnLoadCallback(WebViewXmlHttpResponse response) {
-		if (this.upload.equals("")) {
-			return;
-		}
+        if (upload == null || upload.length() == 0) {
+            return;
+        }
 
 		loadUrlOnUiThread("javascript: (function() { unsafeWindow."
 				+ getUploadOnLoad() + "(JSON.parse(" + response.toJSONString()

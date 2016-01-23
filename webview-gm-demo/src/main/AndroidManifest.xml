@@ -1,10 +1,13 @@
 <manifest
     package="at.pardus.android.webview.gm.demo"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET"/>
 
-    <application>
+    <application
+        android:allowBackup="true"
+        tools:ignore="GoogleAppIndexingWarning,MissingApplicationIcon">
         <activity
             android:name="at.pardus.android.webview.gm.demo.WebViewGmImpl"
             android:configChanges="orientation|keyboardHidden"

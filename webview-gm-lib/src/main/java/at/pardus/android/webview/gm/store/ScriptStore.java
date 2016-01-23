@@ -34,7 +34,7 @@ public interface ScriptStore {
 	 * @return an array of matching scripts or an empty array if none found;
 	 *         null on any error
 	 */
-	public Script[] get(String url);
+    Script[] get(String url);
 
 	/**
 	 * Gets the script identified by the parameter.
@@ -43,7 +43,7 @@ public interface ScriptStore {
 	 *            the ID to search for
 	 * @return the script if found, null else
 	 */
-	public Script get(ScriptId id);
+    Script get(ScriptId id);
 
 	/**
 	 * Gets all installed scripts.
@@ -51,7 +51,7 @@ public interface ScriptStore {
 	 * @return an array of all scripts or an empty array if none installed; null
 	 *         on any error
 	 */
-	public Script[] getAll();
+    Script[] getAll();
 
 	/**
 	 * Adds and enables a user script. If the ID already exists, the existing
@@ -60,7 +60,7 @@ public interface ScriptStore {
 	 * @param script
 	 *            the script to add (or overwrite)
 	 */
-	public void add(Script script);
+    void add(Script script);
 
 	/**
 	 * Enables a user script.
@@ -68,7 +68,7 @@ public interface ScriptStore {
 	 * @param id
 	 *            the ID of the script to enable
 	 */
-	public void enable(ScriptId id);
+    void enable(ScriptId id);
 
 	/**
 	 * Disables a user script.
@@ -76,7 +76,7 @@ public interface ScriptStore {
 	 * @param id
 	 *            the ID of the script to disable
 	 */
-	public void disable(ScriptId id);
+    void disable(ScriptId id);
 
 	/**
 	 * Disables and deletes a user script.
@@ -84,7 +84,7 @@ public interface ScriptStore {
 	 * @param id
 	 *            the ID of the script to delete
 	 */
-	public void delete(ScriptId id);
+    void delete(ScriptId id);
 
 	/**
 	 * Gets all names of values stored by a user script.
@@ -94,7 +94,7 @@ public interface ScriptStore {
 	 * @return an array of all names or an empty array if none found; null on
 	 *         any error
 	 */
-	public String[] getValueNames(ScriptId id);
+    String[] getValueNames(ScriptId id);
 
 	/**
 	 * Gets a value identified by its name and the owner script.
@@ -105,7 +105,7 @@ public interface ScriptStore {
 	 *            the key
 	 * @return a String value or null if none found
 	 */
-	public String getValue(ScriptId id, String name);
+    String getValue(ScriptId id, String name);
 
 	/**
 	 * Sets a name-value pair for a user script.
@@ -117,7 +117,7 @@ public interface ScriptStore {
 	 * @param value
 	 *            its value
 	 */
-	public void setValue(ScriptId id, String name, String value);
+    void setValue(ScriptId id, String name, String value);
 
 	/**
 	 * Deletes a name-value pair stored by a user script.
@@ -127,6 +127,6 @@ public interface ScriptStore {
 	 * @param name
 	 *            the key
 	 */
-	public void deleteValue(ScriptId id, String name);
+    void deleteValue(ScriptId id, String name);
 
 }

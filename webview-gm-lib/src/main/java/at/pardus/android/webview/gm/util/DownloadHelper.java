@@ -57,7 +57,7 @@ public class DownloadHelper {
 			con.connect();
 			InputStream is = con.getInputStream();
 			in = new UnicodeReader(is, con.getContentEncoding());
-			int bytesRead = 0;
+			int bytesRead;
 			while ((bytesRead = in.read(buffer, 0, 4096)) != -1) {
 				if (bytesRead > 0) {
 					out.append(buffer, 0, bytesRead);
@@ -69,10 +69,10 @@ public class DownloadHelper {
 		} catch (IOException e) {
 			Log.e(TAG, Log.getStackTraceString(e));
 			try {
-				InputStream errorStream = con.getErrorStream();
+				InputStream errorStream = con != null ? con.getErrorStream() : null;
 				if (errorStream != null) {
 					in = new UnicodeReader(errorStream, null);
-					int bytesRead = 0;
+					int bytesRead;
 					StringBuilder errorStr = new StringBuilder();
 					while ((bytesRead = in.read(buffer, 0, 4096)) != -1) {
 						if (bytesRead > 0) {
@@ -82,7 +82,7 @@ public class DownloadHelper {
 					in.close();
 					Log.e(TAG, errorStr.toString());
 				}
-			} catch (Exception e1) {
+			} catch (Exception ignored) {
 			}
 			return null;
 		} catch (Exception e) {
@@ -90,8 +90,10 @@ public class DownloadHelper {
 			return null;
 		} finally {
 			try {
-				in.close();
-			} catch (Exception e) {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (Exception ignored) {
 			}
 			if (con != null) {
 				con.disconnect();
@@ -124,7 +126,7 @@ public class DownloadHelper {
 
 			InputStream inputStream = httpConn.getInputStream();
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-			int bytesRead = -1;
+			int bytesRead;
 			byte[] buffer;
 			byte[] tempBuffer = new byte[4096];
 

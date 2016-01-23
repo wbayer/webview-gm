@@ -16,6 +16,7 @@
 
 package at.pardus.android.webview.gm.store.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.util.Log;
@@ -104,8 +105,9 @@ public class ScriptBrowser {
 	 * WebChromeClient and DownloadListener. Also inflates and sets up the
 	 * address field EditText component.
 	 */
-	private void init() {
-		browser = (View) activity.getLayoutInflater().inflate(
+	@SuppressLint("InflateParams")
+    private void init() {
+		browser = activity.getLayoutInflater().inflate(
 				R.layout.script_browser, null);
 		webView = (WebViewGm) browser.findViewById(R.id.webView);
 		webView.setScriptStore(scriptStore);
@@ -268,7 +270,8 @@ public class ScriptBrowser {
 			super.onPageStarted(view, url, favicon);
 		}
 
-		@Override
+		@SuppressWarnings("deprecation")
+        @Override
 		public void onReceivedError(WebView view, int errorCode,
 				String description, String failingUrl) {
 			Toast.makeText(

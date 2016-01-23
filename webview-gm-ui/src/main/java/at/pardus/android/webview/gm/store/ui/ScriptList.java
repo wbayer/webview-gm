@@ -16,6 +16,7 @@
 
 package at.pardus.android.webview.gm.store.ui;
 
+import android.annotation.SuppressLint;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -66,7 +67,8 @@ public class ScriptList {
 	 * Inflates the ListView from XML and registers its OnItemClickListener and
 	 * context menu.
 	 */
-	private void init() {
+	@SuppressLint("InflateParams")
+    private void init() {
 		scriptList = (ListView) activity.getLayoutInflater().inflate(
 				R.layout.script_list, null);
 		scriptList.setTextFilterEnabled(true);

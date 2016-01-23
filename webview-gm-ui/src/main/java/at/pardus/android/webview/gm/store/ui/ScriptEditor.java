@@ -16,6 +16,7 @@
 
 package at.pardus.android.webview.gm.store.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -142,8 +143,9 @@ public class ScriptEditor {
 	 * Inflates the text area and save button from XML and registers its
 	 * OnClickListener.
 	 */
-	private void init() {
-		editForm = (View) activity.getLayoutInflater().inflate(
+	@SuppressLint("InflateParams")
+    private void init() {
+		editForm = activity.getLayoutInflater().inflate(
 				R.layout.edit_script, null);
 		scriptContent = (EditText) editForm.findViewById(R.id.script_content);
 		saveButton = (Button) editForm.findViewById(R.id.save_button);

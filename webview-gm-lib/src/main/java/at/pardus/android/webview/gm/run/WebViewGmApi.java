@@ -17,6 +17,7 @@
 package at.pardus.android.webview.gm.run;
 
 import android.util.Log;
+import android.webkit.JavascriptInterface;
 
 import at.pardus.android.webview.gm.model.Script;
 import at.pardus.android.webview.gm.model.ScriptId;
@@ -64,6 +65,7 @@ public class WebViewGmApi {
 	 *         commas
 	 * @see <a href="http://wiki.greasespot.net/GM_listValues">GM_listValues</a>
 	 */
+    @JavascriptInterface
 	public String listValues(String scriptName, String scriptNamespace,
 			String secret) {
 		if (!this.secret.equals(secret)) {
@@ -100,6 +102,7 @@ public class WebViewGmApi {
 	 * @return the value of name or defaultValue if not found
 	 * @see <a href="http://wiki.greasespot.net/GM_getValue">GM_getValue</a>
 	 */
+    @JavascriptInterface
 	public String getValue(String scriptName, String scriptNamespace,
 			String secret, String name, String defaultValue) {
 		if (!this.secret.equals(secret)) {
@@ -126,6 +129,7 @@ public class WebViewGmApi {
 	 *            the value to set
 	 * @see <a href="http://wiki.greasespot.net/GM_setValue">GM_setValue</a>
 	 */
+    @JavascriptInterface
 	public void setValue(String scriptName, String scriptNamespace,
 			String secret, String name, String value) {
 		if (!this.secret.equals(secret)) {
@@ -149,6 +153,7 @@ public class WebViewGmApi {
 	 *            the name of the value to delete
 	 * @see <tt><a href="http://wiki.greasespot.net/GM_deleteValue">GM_deleteValue</a></tt>
 	 */
+    @JavascriptInterface
 	public void deleteValue(String scriptName, String scriptNamespace,
 			String secret, String name) {
 		if (!this.secret.equals(secret)) {
@@ -172,6 +177,7 @@ public class WebViewGmApi {
 	 *            the message to log
 	 * @see <tt><a href="http://wiki.greasespot.net/GM_log">GM_log</a></tt>
 	 */
+    @JavascriptInterface
 	public void log(String scriptName, String scriptNamespace, String secret,
 			String message) {
 		if (!this.secret.equals(secret)) {
@@ -194,6 +200,7 @@ public class WebViewGmApi {
 	 *            the name of the resource to retrieve from the database.
 	 * @see <tt><a href="http://wiki.greasespot.net/GM_getResourceURL">GM_getResourceURL</a></tt>
 	 */
+    @JavascriptInterface
 	public String getResourceURL(String scriptName, String scriptNamespace,
 			String secret, String resourceName) {
 		if (!this.secret.equals(secret)) {
@@ -235,6 +242,7 @@ public class WebViewGmApi {
 	 *            the name of the resource to retrieve from the database.
 	 * @see <tt><a href="http://wiki.greasespot.net/GM_getResourceText">GM_getResourceText</a></tt>
 	 */
+    @JavascriptInterface
 	public String getResourceText(String scriptName, String scriptNamespace,
 			String secret, String resourceName) {
 		if (!this.secret.equals(secret)) {
@@ -271,6 +279,7 @@ public class WebViewGmApi {
 	 *            the HTTP Request object encoded as a JSON string.
 	 * @see <tt><a href="http://wiki.greasespot.net/GM_xmlhttpRequest">GM_xmlhttpRequest</a></tt>
 	 */
+    @JavascriptInterface
 	public String xmlHttpRequest(String scriptName, String scriptNamespace,
 			String secret, String jsonRequestString) {
 		if (!this.secret.equals(secret)) {

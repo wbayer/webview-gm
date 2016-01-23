@@ -86,8 +86,7 @@ public class ScriptStoreSQLite implements ScriptStore {
 			Log.e(TAG, "Cannot get user script (database not available)");
 			return null;
 		}
-		Script[] scripts = dbHelper.selectScripts(null, null);
-		return scripts;
+        return dbHelper.selectScripts(null, null);
 	}
 
 	@Override

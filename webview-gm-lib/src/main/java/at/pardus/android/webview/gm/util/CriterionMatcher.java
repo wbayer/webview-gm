@@ -126,8 +126,7 @@ public class CriterionMatcher {
 	 * @return the JS regular expression as Java-compatible string
 	 */
 	private static String convertJsRegExp(String jsRegExp) {
-		String output = jsRegExp.substring(1, jsRegExp.length() - 1);
-		return output;
+        return jsRegExp.substring(1, jsRegExp.length() - 1);
 	}
 
 	/**
