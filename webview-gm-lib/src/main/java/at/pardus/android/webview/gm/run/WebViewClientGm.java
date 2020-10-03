@@ -120,8 +120,10 @@ public class WebViewClientGm extends WebViewClient {
 						+ script.getName().replace("\"", "\\\"") + "\", \""
 						+ script.getNamespace().replace("\"", "\\\"")
 						+ "\", \"" + secret + "\"";
-				String callbackPrefix = (script.getName()
-						+ script.getNamespace() + UUID.randomUUID().toString())
+				String callbackPrefix = ("GM_"
+						+ script.getName()
+						+ script.getNamespace()
+						+ UUID.randomUUID().toString())
 						.replaceAll("[^0-9a-zA-Z_]", "");
 				String jsApi = JSUNSAFEWINDOW;
 				jsApi += "var GM_listValues = function() { return "
