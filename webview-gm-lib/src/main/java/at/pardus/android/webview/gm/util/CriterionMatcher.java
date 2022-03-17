@@ -40,7 +40,7 @@ public class CriterionMatcher {
 		}
 		criterion = criterion.toLowerCase();
 		url = url.toLowerCase();
-		if (isRegExp(url)) {
+		if (isRegExp(criterion)) {
 			return url.matches(".*" + convertJsRegExp(criterion) + ".*");
 		}
 		return testGlob(criterion, url);
